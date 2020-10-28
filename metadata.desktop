@@ -1,0 +1,18 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Timesheets
+Comment=Timesheet client
+Type=Service
+Icon=applications-internet
+X-Plasma-MainScript=ui/main.qml
+X-Plasma-API=declarativeappletscript
+
+X-KDE-PluginInfo-Author=Petr Bravenec
+X-KDE-PluginInfo-Email=petr@bravenec.eu
+X-KDE-PluginInfo-License=GPL2
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Website=https://www.hobrasoft.cz/timesheets
+X-KDE-PluginInfo-Name=cz.hobrasoft.timesheets
+X-KDE-PluginInfo-Category=Online Services
+X-KDE-ServiceTypes=Plasma/Applet
+
