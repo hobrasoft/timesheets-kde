@@ -228,7 +228,8 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: iconedit.left;
                     anchors.rightMargin: width/3;
-                    visible: typeof (modelData.ticket) !== 'undefined';
+                    visible: typeof (modelData.ticket) === 'undefined' ? false
+                            :  modelData.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;}).pop().status_can_be_run;
 
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
@@ -273,6 +274,9 @@ Item {
                     anchors.bottom: parent.bottom;
                     onClicked: {
                         if (typeof modelData.ticket !== 'undefined') {
+                            var can_be_run = modelData.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;}).pop().status_can_be_run;
+                            if (can_be_run === false) { return; }
+                            console.log("can_be_run: " + can_be_run);
                             toggleTimesheet(modelData);
                             iconfunning.source = isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
                             return;
