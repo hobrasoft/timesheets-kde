@@ -12,6 +12,7 @@ Item {
     anchors.fill: parent;
 
     property var timesheets: [];
+    property bool allActiveTickets: false;
 
     function isTimesheetRunning(x) {
         if (typeof x.timesheets === 'undefined') { return false; }
@@ -299,7 +300,8 @@ Item {
         initpage.currentCategory = category;
 
         // Get the title
-        if (initpage.currentCategory == -1) {
+        allActiveTickets = (initpage.currentCategory == -1)
+        if (allActiveTickets) {
             title.text = qsTr("All active tickets");
             }
         if (initpage.currentCategory == 0) {
@@ -315,34 +317,34 @@ Item {
 
         var data = new Array();
         if (initpage.currentCategory === 0 && initpage.parentCategory === 0) {
-            var x = new Object();
-            x.category = -1;
-            x.parent_category = 0;
-            x.description = qsTr('All active tickets');
-            x.categories = new Array();
-            x.price = 0;
-            data.push(x);
+            data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
             }
 
-        var api2 = new Api.Api();
-        api2.onFinished = function(json) {
-            if (initpage.currentCategory != 0) {
-                var x = new Object();   
-                x.category = initpage.parentCategory;
-                x.parent_category = 0;
-                x.description = '..';
-                x.categories = new Array();
-                x.price = 0;
-                data.push(x);
-                }
-            listview.model = data.concat(json);
-            var api3 = new Api.Api();
-            api3.onFinished = function(json) {
+        if (allActiveTickets) {
+            data.push({category: initpage.parentCategory, parent_category: 0, description: '..', categories: [], price: 0 });
+            listview.model = data;
+            var api4 = new Api.Api();
+            api4.onFinished = function(json) {
                 listview.model = listview.model.concat(json);
                 }
-            api3.ticketsvw(initpage.currentCategory);
+            api4.ticketsvwall();
             }
-        api2.categoriestree(initpage.currentCategory);
+
+        if (!allActiveTickets) {
+            var api2 = new Api.Api();
+            api2.onFinished = function(json) {
+                if (initpage.currentCategory != 0) {
+                    data.push({category: initpage.parentCategory, parent_category: 0, description: '..', categories: [], price: 0 });
+                    }
+                listview.model = data.concat(json);
+                var api3 = new Api.Api();
+                api3.onFinished = function(json) {
+                    listview.model = listview.model.concat(json);
+                    }
+                api3.ticketsvw(initpage.currentCategory);
+                }
+            api2.categoriestree(initpage.currentCategory);
+            }
         }
 
     AppStyle { id: appStyle; }
