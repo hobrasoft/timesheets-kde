@@ -38,6 +38,23 @@ class Api {
             rq.send(data);
             }
 
+        this.delete = function(url) {
+            var rq = new XMLHttpRequest();
+            var todleto = this;
+            rq.onerror = function() {
+                console.log(rq.responseText);
+                todleto.onError(rq.responseText);
+                };
+            rq.onreadystatechange = function() {
+                if (rq.readyState === XMLHttpRequest.DONE && (rq.status == 200 || rq.status == 201)) {
+                    todleto.onFinished(JSON.parse(rq.responseText));
+                    }
+                };
+            var completeUrl = initpage.serverUrl + initpage.apiPath + url + "?user=" + initpage.username + "&password=" + initpage.password;
+            rq.open("DELETE", completeUrl, true);
+            rq.send();
+            }
+
         this.category = function (c) { this.get("categories/"+c); }
         this.categories = function () { this.get("categories"); }
         this.categoriesToRoot = function (c) { this.get("categoriestoroot/"+c); }
@@ -51,6 +68,7 @@ class Api {
         this.saveTicket = function(t) { this.put("ticketsvw/", JSON.stringify(t)); }
         this.startTimesheet = function(t) { this.get("timesheet/start/" + t); }
         this.stopTimesheet = function(t) { this.get("timesheet/stop/" + t); }
+        this.removeTicket = function(t) { this.delete("tickets/" + t); }
         }
 }
 

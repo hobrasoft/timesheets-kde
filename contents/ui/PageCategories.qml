@@ -258,12 +258,7 @@ Item {
                         anchors.fill: parent;
                         onClicked: {
                             if (typeof modelData.ticket !== 'undefined') {
-                                var apos = absolutePosition(this);
-                                ctxmenu.dx = apos.x + mouseX;
-                                ctxmenu.dy = apos.y
-                                ctxmenu.dh = height;
-                                ctxmenu.ticket = modelData.ticket;
-                                ctxmenu.visible = true;
+                                initpage.loadPage ("PageTicket.qml", { ticket: modelData.ticket } );
                                 return;
                                 }
                             loadData(modelData.category, modelData.parent_category);
@@ -349,17 +344,6 @@ Item {
 
     AppStyle { id: appStyle; }
 
-    CategoriesListMenu {
-        id: ctxmenu;
-        onChange: {
-            initpage.ticket = ticket;
-            initpage.loadPage ("PageTicket.qml", { ticket: ticket } );
-            }
-        onRemove: {
-            dialogRemove.visible = true;
-            dialogRemove.ticket = ticket;
-            }
-        }
 
     ApplicationMenu {
         id: appmenu;

@@ -94,12 +94,17 @@ Item {
     TimesheetsHeader {
         id: header;
         saveEnabled: itemCategory.category != "" || itemCategory.category > 0;
+        deleteEnabled: root.ticket > 0;
+        deleteVisible: true;
         text: qsTr("New ticket");
         onSaveClicked: {
             root.save();
             }
         onCancelClicked: {
             initpage.loadPage("PageCategories.qml");
+            }
+        onDeleteClicked: {
+            deleteDialog.visible = true;
             }
         }
 
@@ -190,6 +195,19 @@ Item {
                     }
 */
                 }
+            }
+        }
+
+    DeleteTicketDialog {
+        text: qsTr("Do you really want to delete the ticket?");
+        id: deleteDialog;
+        onAccepted: {
+            console.log("odchazim mazat ticket: " + root.ticket);
+            var api = new Api.Api();
+            api.onFinished = function() {
+                initpage.loadPage("PageCategories.qml");
+                };
+            api.removeTicket(root.ticket);
             }
         }
 

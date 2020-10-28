@@ -5,6 +5,8 @@
 import QtQuick 2.7
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.5
+import QtGraphicalEffects 1.12
+
 
 Rectangle {
     id: root;
@@ -21,12 +23,15 @@ Rectangle {
     property string text: "";
     property alias saveEnabled: buttonSave.enabled;
     property alias cancelEnabled: buttonCancel.enabled;
+    property alias deleteEnabled: buttonDelete.enabled;
     property alias saveVisible: buttonSave.visible;
+    property alias deleteVisible: buttonDelete.visible;
     property alias cancelVisible: buttonCancel.visible;
     property alias spacerVisible: spacer.visible;
 
     signal saveClicked();
     signal cancelClicked();
+    signal deleteClicked();
     color: "transparent";
 
     Button {
@@ -53,6 +58,43 @@ Rectangle {
         height: appStyle.labelSize * 2.5;
         onClicked: {
             cancelClicked();
+            }
+        }
+
+    Button {
+        enabled: false;
+        visible: false;
+        id: buttonDelete;
+        anchors.top: parent.top;
+        anchors.right: buttonCancel.left;
+        anchors.rightMargin: 2;
+        height: appStyle.labelSize * 2.5;
+        width: height;
+        onClicked: {
+            deleteClicked();
+            }
+        style: AppButtonStyleHeader {
+            background: Rectangle {
+                color: ((control.pressed) ? "#60ffffff" : ((control.enabled) ? "#10ffffff" : "transparent" ) )
+                border.color: (control.enabled) ? "#30ffffff" : "transparent";
+                border.width: 1;
+                radius: 0;
+                Image {
+                    id: icon;
+                    source: "trash.svg"
+                    fillMode: Image.PreserveAspectFit;
+                    anchors.fill: parent;
+                    anchors.margins: width/5;
+
+                    layer.enabled: true;
+                    layer.effect: ColorOverlay {
+                        anchors.fill: icon;
+                        color: (control.enabled) ? "tomato" : "#30ffffff";
+                        source: icon;
+                        }
+
+                    }
+                }
             }
         }
 
