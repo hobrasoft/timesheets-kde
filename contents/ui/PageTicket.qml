@@ -198,7 +198,7 @@ Item {
             }
         }
 
-    DeleteTicketDialog {
+    QuestionDialog {
         text: qsTr("Do you really want to delete the ticket?");
         id: deleteDialog;
         onAccepted: {

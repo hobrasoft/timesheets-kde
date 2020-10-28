@@ -18,11 +18,16 @@ Item {
         id: header;
         saveEnabled: description.text !== ''
         text: qsTr("New category");
+        deleteVisible: true;
+        deleteEnabled: currentCategory > 0;
         onSaveClicked: {
             saveData();
             }
         onCancelClicked: {
             initpage.loadPage("PageCategories.qml");
+            }
+        onDeleteClicked: {
+            deleteDialog.visible = true;
             }
         }
 
@@ -64,10 +69,24 @@ Item {
 
         }
 
-
     Component.onCompleted: {
         loadData();
         }
+
+
+    QuestionDialog {
+        text: qsTr("Do you really want to delete the category?\nWarning: This will delete all subcategories and theirs tickets!");
+        id: deleteDialog;
+        onAccepted: {
+            var api = new Api.Api();
+            api.onFinished = function() {
+                initpage.loadPage("PageCategories.qml");
+                };
+            api.removeCategory(root.currentCategory);
+            initpage.loadPage("PageCategories.qml");
+            }
+        }
+
 
     function loadData() {
         // Get the parent category

@@ -32,9 +32,18 @@ Rectangle {
             anchors.left: parent.left;
             anchors.right: parent.right;
             spacing: 0;
-            // anchors.leftMargin: appStyle.textSize * 0.25; 
-            // anchors.rightMargin: appStyle.textSize * 0.25;
-            // Rectangle { height: appStyle.textSize * 0.45; width: 1; }
+
+            Button {
+                text: qsTr("Create new ticket");
+                Layout.fillWidth: true;
+                Layout.preferredHeight: appStyle.labelSize * 2.5;
+                style: AppButtonStyleContextMenu { }
+                onClicked: {
+                    root.visible = false;
+                    initpage.loadPage("PageTicket.qml", { currentCategory: initpage.currentCategory, ticket: 0 } );
+                    }
+                }
+
             Button {
                 text: qsTr("Create new category");
                 Layout.fillWidth: true;
@@ -54,17 +63,6 @@ Rectangle {
                 onClicked: {
                     root.visible = false;
                     initpage.loadPage("PageCategory.qml", { currentCategory: initpage.currentCategory, parentCategory: initpage.parentCategory } );
-                    }
-                }
-
-            Button {
-                text: qsTr("Create new ticket");
-                Layout.fillWidth: true;
-                Layout.preferredHeight: appStyle.labelSize * 2.5;
-                style: AppButtonStyleContextMenu { }
-                onClicked: {
-                    root.visible = false;
-                    initpage.loadPage("PageTicket.qml", { currentCategory: initpage.currentCategory, ticket: 0 } );
                     }
                 }
 

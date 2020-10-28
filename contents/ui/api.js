@@ -69,6 +69,7 @@ class Api {
         this.startTimesheet = function(t) { this.get("timesheet/start/" + t); }
         this.stopTimesheet = function(t) { this.get("timesheet/stop/" + t); }
         this.removeTicket = function(t) { this.delete("tickets/" + t); }
+        this.removeCategory = function(c) { this.delete("categories/" + c); }
         }
 }
 
