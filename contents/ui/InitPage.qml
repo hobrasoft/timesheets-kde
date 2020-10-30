@@ -42,6 +42,13 @@ Item {
 
     AppStyle { id: appStyle; }
 
+    Timer {
+        id: timer;
+        interval: 1000;
+        running: true;
+        repeat: true;
+        }
+
     Component.onCompleted: {
         Number.prototype.pad = function(size) {
             var s = String(this);

@@ -187,10 +187,23 @@ Item {
                         anchors.left: lbl1.right;
                         anchors.leftMargin: appStyle.smallSize/2;
                         color: appStyle.textColor;
-                        text: (typeof (modelData.ticket) === 'undefined') ? '' 
-                                :  Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
-                                        return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
-                                        }, 0)).formatHHMM();
+                        text: Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                                    return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
+                                    }, 0)).formatHHMMSS();
+
+                        Component.onCompleted: {
+                            if (typeof modelData.ticket === 'undefined') { return; }
+                            timer.triggered.connect(function() {
+                                var seconds = Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                                            var t = (currentValue.date_to === '') 
+                                                    ? currentValue.date_from.secsTo(new Date())
+                                                    : currentValue.date_from.secsTo(currentValue.date_to);
+                                            return accumulator + t
+                                            }, 0))
+                                lbl2.text = seconds.formatHHMMSS();
+                                lbl4.text = Math.round(seconds * modelData.price / 3600)
+                                });
+                            }
                         }
 
                     Text {
