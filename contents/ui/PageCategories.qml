@@ -84,6 +84,37 @@ Item {
             }
 
         Rectangle {
+            id: refresh;
+            anchors.top: menu.top;
+            anchors.right: menu.left;
+            width: height;
+            height: menu.height;
+            radius: 5;
+            color: "#10ffffff";
+            
+            Image {
+                id: refreshIcon;
+                anchors.fill: parent;
+                anchors.margins: 5;
+                source: "sync-alt-solid.svg";
+                fillMode: Image.PreserveAspectFit;
+
+                layer.enabled: true;
+                layer.effect: ColorOverlay {
+                    anchors.fill: icon;
+                    color: "#80ffffff" 
+                    source: refreshIcon;
+                    }
+                }
+            MouseArea {
+                anchors.fill: parent;
+                onClicked: {
+                    loadData(initpage.currentCategory, initpage.parentCategory);
+                    }
+                }
+            }
+
+        Rectangle {
             id: menu;
             anchors.top: parent.top;
             anchors.right: parent.right;
@@ -114,11 +145,12 @@ Item {
         anchors.top: header.bottom;
         anchors.left: parent.left;
         anchors.right: parent.right;
-        anchors.bottom: parent.bottom;
+        anchors.bottom: footer.top;
         anchors.topMargin: header.height/5;
+        anchors.bottomMargin: header.height/5;
         spacing: 5;
         clip: true;
-        
+
         delegate: Rectangle {
             width: listview.width;
             height: childrenRect.height;
@@ -309,6 +341,64 @@ Item {
             }
         }
 
+    Rectangle {
+        id: footer;
+        anchors.left: parent.left;
+        anchors.right: parent.right;
+        anchors.bottom: parent.bottom;
+        height: appStyle.smallSize * 2;
+        color: "#10ffffff";
+        radius: 5;
+        clip: true;
+
+        Text {
+            id: footerTimeLbl;
+            anchors.top: parent.top;
+            anchors.left: parent.left;
+            anchors.bottom: parent.bottom;
+            anchors.leftMargin: 30
+            font.pixelSize: appStyle.smallSize;
+            verticalAlignment: Text.AlignVCenter;
+            color: appStyle.textColor;
+            text: qsTr("Time:");
+            }
+
+        Text {
+            id: footerTime;
+            anchors.top: parent.top;
+            anchors.left: footerTimeLbl.right;
+            anchors.bottom: parent.bottom;
+            anchors.leftMargin: 10
+            font.pixelSize: appStyle.smallSize;
+            verticalAlignment: Text.AlignVCenter;
+            color: appStyle.textColor;
+            }
+
+        Text {
+            id: footerPriceLbl;
+            anchors.top: parent.top;
+            anchors.left: footerTime.right;
+            anchors.bottom: parent.bottom;
+            anchors.leftMargin: 30;
+            font.pixelSize: appStyle.smallSize;
+            verticalAlignment: Text.AlignVCenter;
+            color: appStyle.textColor;
+            text: qsTr("Price:");
+            }
+
+        Text {
+            id: footerPrice;
+            anchors.top: parent.top;
+            anchors.left: footerPriceLbl.right;
+            anchors.bottom: parent.bottom;
+            anchors.leftMargin: 10
+            font.pixelSize: appStyle.smallSize;
+            verticalAlignment: Text.AlignVCenter;
+            color: appStyle.textColor;
+            }
+
+        }
+
     Component.onCompleted: {
         loadData(initpage.currentCategory, initpage.parentCategory);
         }
@@ -343,6 +433,7 @@ Item {
             listview.model = data;
             var api4 = new Api.Api();
             api4.onFinished = function(json) {
+                sumToFooter(json);
                 listview.model = listview.model.concat(json);
                 }
             api4.ticketsvwall();
@@ -357,12 +448,28 @@ Item {
                 listview.model = data.concat(json);
                 var api3 = new Api.Api();
                 api3.onFinished = function(json) {
+                    sumToFooter(json);
                     listview.model = listview.model.concat(json);
                     }
                 api3.ticketsvw(initpage.currentCategory);
                 }
             api2.categoriestree(initpage.currentCategory);
             }
+        }
+
+
+    function sumToFooter(data) {
+        var time = 
+            Number(data.reduce(function(a1, v1) {
+                return a1 + v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                }, 0)).formatHHMMSS();
+        var price = 
+            Number(data.reduce(function(a1, v1) {
+                return a1 + v1.price * v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                }, 0)); 
+        var price = Math.round(price/3600);
+        footerTime.text = time;
+        footerPrice.text = price;
         }
 
 

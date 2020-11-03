@@ -25,7 +25,6 @@ Item {
 
     */
     property int    status_id: 0;
-//  property string status: "";
     property string description: "";
     property string category: "";
     property string status_description: "";

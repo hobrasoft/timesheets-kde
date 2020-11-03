@@ -33,7 +33,7 @@ Item {
                 itemPrice.price = ticket.price;
                 // itemGps.positions = ticket.values.filter(function(item){return (item.name == "gps");});
                 // itemPhoto.photos = ticket.files.filter(function(item){return (item.type.startsWith("image/"));});
-                itemStatus.statuses = ticket.statuses;
+                itemStatus.statuses = ticket.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;});
                 root.created = false;
                 loadCategoriesTree(ticket.category);
                 }
