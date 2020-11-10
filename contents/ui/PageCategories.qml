@@ -265,7 +265,6 @@ Item {
                         }
 
 
-
                     }
 
                 Image {
@@ -400,7 +399,12 @@ Item {
         }
 
     Component.onCompleted: {
-        loadData(initpage.currentCategory, initpage.parentCategory);
+        var api7 = new Api.Api();
+        api7.onFinished = function(json) {
+            initpage.userid = json.userid;
+            loadData(initpage.currentCategory, initpage.parentCategory);
+            }
+        api7.authenticate(initpage.username, initpage.password);
         }
 
     function loadData(category, pCategory) {

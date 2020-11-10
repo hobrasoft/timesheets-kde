@@ -16,13 +16,12 @@ Item {
 
     property int    currentCategory: 0;
     property int    parentCategory: 0;
-    property int    userid: 2;
+    property int    userid: -1;
     property bool   show_price: true;
     property bool   all: false;
-
     property int ticket: 0;
-
     property var item: null;
+
 
     function loadPage(page, params) {
         if (initpage.item != null) {

@@ -66,6 +66,17 @@ Rectangle {
                     }
                 }
 
+            Button {
+                text: qsTr("Create report");
+                Layout.fillWidth: true;
+                Layout.preferredHeight: appStyle.labelSize * 2.5;
+                style: AppButtonStyleContextMenu { }
+                onClicked: {
+                    root.visible = false;
+                    initpage.loadPage("PageReport.qml", { currentCategory: initpage.currentCategory, parentCategory: initpage.parentCategory } );
+                    }
+                }
+
             MInputCheckboxField {
                 id: all;
                 label : qsTr("Show closed tickets");

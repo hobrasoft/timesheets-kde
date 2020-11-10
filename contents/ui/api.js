@@ -70,6 +70,9 @@ class Api {
         this.stopTimesheet = function(t) { this.get("timesheet/stop/" + t); }
         this.removeTicket = function(t) { this.delete("tickets/" + t); }
         this.removeCategory = function(c) { this.delete("categories/" + c); }
+        this.authenticate = function(user, password) { this.get("authenticate"); }
+        this.statusesAll = function () { this.get("statuses"); }
+        this.overview = function (category, statuses) { this.get("overview/" + category,  "statuses=" + statuses.join(",")); }
         }
 }
 
