@@ -1,5 +1,5 @@
-= FIO Plasmoid pro prostředí KDE
-Plasmoid zobrazuje pohyby na účtu FIO
+= Timesheet Plasmoid pro prostředí KDE
+Plasmoid pomáhá zaznamenávat práci podle úkolů a projektů
 
 == Instalace
 
