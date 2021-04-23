@@ -229,7 +229,12 @@ Item {
                         Component.onCompleted: {
                             if (typeof modelData.ticket === 'undefined') { return; }
                             timer.triggered.connect(function() {
+                                if (typeof modelData == 'undefined') { return; }
+                                if (typeof modelData.timesheets == 'undefined') { return; }
                                 var seconds = Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                                            if (typeof currentValue == 'undefined') { return accumulator; }
+                                            if (typeof currentValue.date_to == 'undefined') { return accumulator; }
+                                            if (typeof currentValue.date_from == 'undefined') { return accumulator; }
                                             var t = (currentValue.date_to === '') 
                                                     ? currentValue.date_from.secsTo(new Date())
                                                     : currentValue.date_from.secsTo(currentValue.date_to);
@@ -262,6 +267,19 @@ Item {
                                 :  Math.round(Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
                                         return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
                                         }, 0)) * modelData.price / 3600);
+                        }
+
+                    Text {
+                        id: lbl5;
+                        font.pixelSize: appStyle.smallSize;
+                        anchors.top: lbl2.top
+                        anchors.left: lbl4.right;
+                        anchors.leftMargin: appStyle.smallSize;
+                        color: appStyle.textColor;
+                        text:  modelData.statuses
+                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                .filter(function(x){return !x.status_ignored;})
+                                .pop().status_description;
                         }
 
 
