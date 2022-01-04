@@ -4,6 +4,7 @@
  */
 import QtQuick 2.7
 import org.kde.plasma.components 2.0 as PlasmaComponents
+import "api.js" as Api
 
 Item {
     id: initpage;
@@ -18,10 +19,50 @@ Item {
     property int    parentCategory: 0;
     property int    userid: -1;
     property bool   show_price: true;
-    property bool   all: false;
-    property int ticket: 0;
-    property var item: null;
+    property int    ticket: 0;
+    property var    item: null;
 
+    function all() {
+        for (var i=0; i<statuses.count; i++) {
+            // console.log("sssssssssssssssssssssssssssssss " + statuses.get(i).closed + " " + statuses.get(i).checked);
+            if (statuses.get(i).closed && statuses.get(i).checked) { 
+                return "true"; 
+                }
+            }
+        return "false";
+        }
+
+    function statusesArray() {
+        var x = new Array;
+        for (var i=0; i<statuses.count; i++) {
+            if (statuses.get(i).checked) {
+                x.push(statuses.get(i).status);
+                }
+            }
+        return x;
+        }
+
+    ListModel {
+        id: statuses;
+        Component.onCompleted: {
+            var api = new Api.Api();
+            api.onFinished = function(json) {
+                for (var i=0; i<json.length; i++) {
+                    console.log("-------------------- " + JSON.stringify(json[i]));
+                    if (json[i].ignored) { continue; }
+                    append({status: json[i].status, 
+                            description: json[i].description, 
+                            checked: !(json[i].closed),
+                            abbreviation: json[i].abbreviation,
+                            can_be_run: json[i].can_be_run,
+                            closed: json[i].closed,
+                            statusColor: json[i].color}
+                            );
+                    }
+                }
+            api.statusesAll();
+            }
+        }
 
     function loadPage(page, params) {
         if (initpage.item != null) {

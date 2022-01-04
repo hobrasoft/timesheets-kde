@@ -4,7 +4,10 @@
  */
 import QtQuick 2.7
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.5
+import QtQml 2.7
+import "api.js" as Api
 
 
 Rectangle {
@@ -12,6 +15,13 @@ Rectangle {
     visible: false;
     anchors.fill: parent;
     color: "#80000000";
+
+    signal statusesChanged();
+
+    onVisibleChanged: {
+        if (visible) { return; }
+        statusesChanged();
+        }
 
     MouseArea {
         anchors.fill: parent;
@@ -77,26 +87,25 @@ Rectangle {
                     }
                 }
 
-            MInputCheckboxField {
-                id: all;
-                label : qsTr("Show closed tickets");
+            Repeater {
+                id: listview;
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
-                partiallyCheckedEnabled: false;
+                model: statuses;
+                clip: true;
+
+                MInputCheckboxField {
+                    label: description;
+                    width: listview.width;
+                    partiallyCheckedEnabled: false;
+                    checkedState: statuses.get(index).checked ? Qt.Checked : Qt.UnChecked;
+                    onCheckedStateChanged: {
+                        statuses.setProperty(index, "checked", checkedState == Qt.Checked);
+                        console.log("----------------- on checked state changed: " + checkedState + " " + (checkedState == Qt.Checked) + " " + statuses.get(index).checked );
+                        }
+                    }
                 }
-
-
             }
-        }
-
-    Component.onCompleted: {
-        all.checkedState = (initpage.all) ? Qt.Checked : Qt.Unchecked;
-        all.onCheckedStateChanged.connect(function(){
-            console.log("checkedState: " + all.checkedState + " checked: " + (all.checkedState === Qt.Checked) );
-            initpage.all = (all.checkedState === Qt.Checked)
-            root.visible = false;
-            initpage.loadPage("PageCategories.qml");
-            });
         }
 
 }

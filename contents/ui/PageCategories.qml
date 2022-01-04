@@ -101,7 +101,7 @@ Item {
 
                 layer.enabled: true;
                 layer.effect: ColorOverlay {
-                    anchors.fill: icon;
+                    anchors.fill: refreshIcon;
                     color: "#80ffffff" 
                     source: refreshIcon;
                     }
@@ -455,6 +455,17 @@ Item {
             listview.model = data;
             var api4 = new Api.Api();
             api4.onFinished = function(json) {
+                // filter selected categories
+                var stats = initpage.statusesArray();
+                json = json.filter(function(x) {
+                        if (typeof x.statuses === 'undefined') { return true; }
+                        if (x.statuses.length === 0) { return true; }
+                        var x_status = x.statuses
+                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                .filter(function(s){return !s.status_ignored;}).pop().status;
+                        return stats.includes(x_status);
+                        });
+
                 sumToFooter(json);
                 listview.model = listview.model.concat(json);
                 }
@@ -470,6 +481,16 @@ Item {
                 listview.model = data.concat(json);
                 var api3 = new Api.Api();
                 api3.onFinished = function(json) {
+                    // filter selected categories
+                    var stats = initpage.statusesArray();
+                    json = json.filter(function(x) {
+                            if (typeof x.statuses === 'undefined') { return true; }
+                            if (x.statuses.length === 0) { return true; }
+                            var x_status = x.statuses
+                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                    .filter(function(s){return !s.status_ignored;}).pop().status;
+                            return stats.includes(x_status);
+                            });
                     sumToFooter(json);
                     listview.model = listview.model.concat(json);
                     }
@@ -500,6 +521,10 @@ Item {
 
     ApplicationMenu {
         id: appmenu;
+        onStatusesChanged: {
+            // console.log("---------------- PageCategories.onStatusesChanged: ");
+            loadData(initpage.currentCategory, initpage.parentCategory);
+            }
         }
 
     function absolutePosition(node) {
