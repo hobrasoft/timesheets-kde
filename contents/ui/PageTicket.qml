@@ -52,6 +52,7 @@ Item {
         var api2 = new Api.Api();
         api2.onFinished = function(json) {
             json.map(function(x){itemCategory.appendCategory(x)});
+            itemPrice.price = json.pop().price;
             }
         api2.onError = function(text) { console.log(text); }
         api2.categoriesToRoot(c);
