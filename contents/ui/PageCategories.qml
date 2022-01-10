@@ -109,7 +109,7 @@ Item {
             MouseArea {
                 anchors.fill: parent;
                 onClicked: {
-                    loadData(initpage.currentCategory, initpage.parentCategory);
+                    loadData(initpage.currentCategory);
                     }
                 }
             }
@@ -222,9 +222,11 @@ Item {
                         anchors.left: lbl1.right;
                         anchors.leftMargin: appStyle.smallSize/2;
                         color: appStyle.textColor;
-                        text: Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                        text: typeof modelData !== 'undefined' && typeof modelData.timesheets !== 'undefined'
+                              ? Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
                                     return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
-                                    }, 0)).formatHHMMSS();
+                                    }, 0)).formatHHMMSS()
+                              : "";
 
                         Component.onCompleted: {
                             if (typeof modelData.ticket === 'undefined') { return; }
@@ -276,10 +278,12 @@ Item {
                         anchors.left: lbl4.right;
                         anchors.leftMargin: appStyle.smallSize;
                         color: appStyle.textColor;
-                        text:  modelData.statuses
-                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                .filter(function(x){return !x.status_ignored;})
-                                .pop().status_description;
+                        text:  typeof modelData !== 'undefined' && typeof modelData.statuses !== 'undefined'
+                                ? modelData.statuses
+                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                    .filter(function(x){return !x.status_ignored;})
+                                    .pop().status_description
+                                : "";
                         }
 
 
@@ -420,13 +424,16 @@ Item {
         var api7 = new Api.Api();
         api7.onFinished = function(json) {
             initpage.userid = json.userid;
-            loadData(initpage.currentCategory, initpage.parentCategory);
+            loadData(initpage.currentCategory);
             }
         api7.authenticate(initpage.username, initpage.password);
         }
 
-    function loadData(category, pCategory) {
-        initpage.parentCategory = pCategory;
+    function loadData(category) {
+        if (category == -999) {
+            category = initpage.parentCategory;
+            }
+        initpage.parentCategory = initpage.currentCategory;
         initpage.currentCategory = category;
 
         // Get the title
@@ -441,17 +448,18 @@ Item {
             var api1 = new Api.Api();
             api1.onFinished = function(json) {
                 title.text = json.description;
+                initpage.parentCategory = json.parent_category;
                 }
             api1.category(initpage.currentCategory);
             }
 
         var data = new Array();
-        if (initpage.currentCategory === 0 && initpage.parentCategory === 0) {
+        if (initpage.currentCategory === 0) {
             data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
             }
 
         if (allActiveTickets) {
-            data.push({category: initpage.parentCategory, parent_category: 0, description: '..', categories: [], price: 0 });
+            data.push({category: 0, parent_category: 0, description: '..', categories: [], price: 0 });
             listview.model = data;
             var api4 = new Api.Api();
             api4.onFinished = function(json) {
@@ -476,7 +484,7 @@ Item {
             var api2 = new Api.Api();
             api2.onFinished = function(json) {
                 if (initpage.currentCategory != 0) {
-                    data.push({category: initpage.parentCategory, parent_category: 0, description: '..', categories: [], price: 0 });
+                    data.push({category: -999, parent_category: 0, description: '..', categories: [], price: 0 });
                     }
                 listview.model = data.concat(json);
                 var api3 = new Api.Api();
@@ -523,7 +531,7 @@ Item {
         id: appmenu;
         onStatusesChanged: {
             // console.log("---------------- PageCategories.onStatusesChanged: ");
-            loadData(initpage.currentCategory, initpage.parentCategory);
+            loadData(initpage.currentCategory);
             }
         }
 
