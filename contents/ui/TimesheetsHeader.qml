@@ -44,6 +44,7 @@ Rectangle {
         style: AppButtonStyleHeader {}
         height: appStyle.labelSize * 2.5;
         onClicked: {
+            if (!enabled) { return; }
             saveClicked();
             }
         }
@@ -57,6 +58,7 @@ Rectangle {
         style: AppButtonStyleHeader {}
         height: appStyle.labelSize * 2.5;
         onClicked: {
+            if (!enabled) { return; }
             cancelClicked();
             }
         }
@@ -71,6 +73,7 @@ Rectangle {
         height: appStyle.labelSize * 2.5;
         width: height;
         onClicked: {
+            if (!enabled) { return; }
             deleteClicked();
             }
         style: AppButtonStyleHeader {

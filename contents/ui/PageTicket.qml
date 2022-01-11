@@ -29,8 +29,9 @@ Item {
                 itemDate.date = ticket.date;
                 itemUser.user = ticket.user;
                 itemDescription.description = ticket.description;
-                itemTimesheets.timesheets = ticket.timesheets;
                 itemPrice.price = ticket.price;
+                itemTimesheets.price = ticket.price;
+                itemTimesheets.setTimesheets(ticket.timesheets);
                 // itemGps.positions = ticket.values.filter(function(item){return (item.name == "gps");});
                 // itemPhoto.photos = ticket.files.filter(function(item){return (item.type.startsWith("image/"));});
                 itemStatus.statuses = ticket.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;});
@@ -53,6 +54,8 @@ Item {
         api2.onFinished = function(json) {
             json.map(function(x){itemCategory.appendCategory(x)});
             itemPrice.price = json.pop().price;
+            itemTimesheets.price = itemPrice.price;
+            itemTimesheets.recalculate();
             }
         api2.onError = function(text) { console.log(text); }
         api2.categoriesToRoot(c);
@@ -63,7 +66,6 @@ Item {
         ticket.ticket = root.ticket;
         ticket.category = itemCategory.category;
         ticket.date = itemDate.date;
-        ticket.price = 0;
         ticket.description = itemDescription.description;
         ticket.user = itemUser.user;
         ticket.modified = true;
@@ -72,7 +74,7 @@ Item {
         // ticket.values = itemGps.positions;
         // ticket.files = itemPhoto.photos;
         ticket.statuses = itemStatus.statuses;
-        console.log("save: " + JSON.stringify(itemStatus.statuses));
+        ticket.timesheets = itemTimesheets.timesheets();
         var api = new Api.Api();
         api.onFinished = function(json) {
             initpage.loadPage("PageCategories.qml");
@@ -136,7 +138,6 @@ Item {
                 ItemTimesheets {
                     id: itemTimesheets ;
                     anchors.top: parent.top;
-                    price: itemPrice.price;
                     root: root;
                     }
 
