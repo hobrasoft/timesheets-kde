@@ -75,6 +75,7 @@ Item {
         // ticket.files = itemPhoto.photos;
         ticket.statuses = itemStatus.statuses;
         ticket.timesheets = itemTimesheets.timesheets();
+        console.log(JSON.stringify(ticket));
         var api = new Api.Api();
         api.onFinished = function(json) {
             initpage.loadPage("PageCategories.qml");

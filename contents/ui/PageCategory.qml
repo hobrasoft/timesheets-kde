@@ -99,6 +99,7 @@ Item {
                 price.text = json.price;
                 var api2 = new Api.Api();
                 api2.onFinished = function(json) {
+                    json.pop();
                     json.map(function(x){itemCategory.appendCategory(x)});
                     }
                 api2.categoriesToRoot(json.category);
