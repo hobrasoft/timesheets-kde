@@ -53,7 +53,7 @@ Item {
         var api2 = new Api.Api();
         api2.onFinished = function(json) {
             json.map(function(x){itemCategory.appendCategory(x)});
-            itemPrice.price = json.pop().price;
+            if (itemPrice.price === "") { itemPrice.price = json.pop().price; }
             itemTimesheets.price = itemPrice.price;
             itemTimesheets.recalculate();
             }
