@@ -447,7 +447,7 @@ Item {
         if (initpage.currentCategory > 0) {
             var api1 = new Api.Api();
             api1.onFinished = function(json) {
-                title.text = json.description;
+                title.text = '(' + initpage.currentCategory + ') ' + json.description;
                 initpage.parentCategory = json.parent_category;
                 }
             api1.category(initpage.currentCategory);
