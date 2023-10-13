@@ -13,18 +13,19 @@ import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 
 CheckBox {
+    id: root;
     style: CheckBoxStyle {
         indicator: Rectangle {
-            implicitWidth: 40;
-            implicitHeight: 40;
-            radius: 10;
-            color: control.pressed ? "#20ffffff" : "#60ffffff";
+            implicitWidth: 30;
+            implicitHeight: 30;
+            radius: height/8
+            color: control.pressed ? "#30ffffff" : "transparent";
             border.color: "lightgray";
-            border.width: 2;
+            border.width: 3;
             Rectangle {
                 visible: control.checkedState == Qt.Checked;
-                color: "#80808080";
-                radius: 8;
+                color: "#b0808080";
+                radius: height/8;
                 anchors.margins: 7;
                 anchors.fill: parent;
                 }
@@ -33,8 +34,8 @@ CheckBox {
                 border.color: "#80808080";
                 border.width: 3;
                 color: "transparent";
-                radius: 8;
-                anchors.margins: 8;
+                radius: height/8;
+                anchors.margins: 9;
                 anchors.fill: parent;
                 }
 

@@ -297,7 +297,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: iconedit.left;
                     anchors.rightMargin: width/3;
-                    visible: typeof (modelData.ticket) === 'undefined' ? false
+                    visible: typeof (modelData.ticket) === 'undefined' || typeof (modelData.statuses) === 'undefined' || modelData.statuses.length === 0 ? false
                             :  modelData.statuses
                                     .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
                                     .filter(function(x){return !x.status_ignored;})
@@ -317,7 +317,8 @@ Item {
                     height: tname.height;
                     fillMode: Image.PreserveAspectFit;
                     anchors.verticalCenter: parent.verticalCenter;
-                    anchors.right: parent.right;
+                    anchors.right: checker.left;
+                    anchors.rightMargin: width/3;
                     visible: (typeof (modelData.ticket) !== 'undefined');
 
                     layer.enabled: true;
@@ -336,6 +337,19 @@ Item {
                                 }
                             loadData(modelData.category, modelData.parent_category);
                             }
+                        }
+                    }
+
+                MInputCheckbox {
+                    id: checker;
+                    height: 50;
+                    width: height;
+                    anchors.verticalCenter: parent.verticalCenter;
+                    anchors.right: parent.right;
+                    anchors.rightMargin: 0;
+                    visible: (typeof (modelData.ticket) !== 'undefined');
+                    checked: modelData.checked;
+                    onClicked: {
                         }
                     }
 
@@ -491,13 +505,25 @@ Item {
                 api3.onFinished = function(json) {
                     // filter selected categories
                     var stats = initpage.statusesArray();
-                    json = json.filter(function(x) {
+                    json = json
+                        .filter(function(x) {
                             if (typeof x.statuses === 'undefined') { return true; }
                             if (x.statuses.length === 0) { return true; }
                             var x_status = x.statuses
                                     .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
                                     .filter(function(s){return !s.status_ignored;}).pop().status;
                             return stats.includes(x_status);
+                            })
+                        .map(function(x) {
+                            var n = x;
+                            n.checked = true;
+                            return n;
+/*
+                            })
+                        .map(function(x) {
+                            model.append(x);
+                            return x;
+*/
                             });
                     sumToFooter(json);
                     listview.model = listview.model.concat(json);
@@ -533,6 +559,10 @@ Item {
             // console.log("---------------- PageCategories.onStatusesChanged: ");
             loadData(initpage.currentCategory);
             }
+        }
+
+    ListModel {
+        id: model;
         }
 
     function absolutePosition(node) {
