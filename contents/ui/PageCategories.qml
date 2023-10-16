@@ -14,7 +14,36 @@ Item {
     property var timesheets: [];
     property bool allActiveTickets: false;
 
+
+    function isTicket(index) {
+        if (typeof index !== 'number') { return false; }
+        if (index == -1) { return false; }
+        if (typeof timesheetsmodel.get(index) !== 'object') { return false; }
+        if (typeof timesheetsmodel.get(index).ticket === 'number' && timesheetsmodel.get(index).ticket != 0) { return true; }
+        if (typeof timesheetsmodel.get(index).ticket === 'undefined') { return false; }
+        return false;
+        }
+
+    function isCategory(index) {
+        return !isTicket(index);
+        }
+
+    function canBeRun(index) {
+        if (!isTicket(index)) { return false; }
+        var item = timesheetsmodel.get(index);
+        if (typeof item.statuses === 'undefined') { return false; }
+        var statuses = item.statuses;
+        console.log("canBeRun(index): " + typeof(item) + " " + typeof(statuses) + " " + Array.isArray(statuses) + " " + typeof(statuses.length) + ' ' + statuses.length);
+        if (statuses.length === 0) { return false; }
+        console.log("canBeRun(index): " + JSON.stringify(statuses[0]));
+        return statuses
+              .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+              .filter(function(x){return !x.status_ignored;})
+              .pop().status_can_be_run;
+        }
+
     function isTimesheetRunning(x) {
+        return false;
         if (typeof x.timesheets === 'undefined') { return false; }
         for (var i=0; i<timesheets.length; i++) {
             if (timesheets[i].ticket == x.ticket) {
@@ -150,6 +179,7 @@ Item {
         anchors.bottomMargin: header.height/5;
         spacing: 5;
         clip: true;
+        model: timesheetsmodel;
 
         delegate: Rectangle {
             width: listview.width;
@@ -168,7 +198,7 @@ Item {
 
                 Image {
                     id: icon;
-                    source: typeof (modelData.ticket) === 'undefined' ? "folder.svg" : "check.svg";
+                    source: isTicket(index) ? "check.svg" : "folder.svg";
                     height: tname.height;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.left: parent.left;
@@ -177,12 +207,14 @@ Item {
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
                         anchors.fill: icon;
-                        color: (typeof (modelData.ticket) === 'undefined') 
+                    /*
+                        color: (typeof (ticket) === 'undefined') 
                             ? "#80ffffff" 
-                            :  modelData.statuses
+                            :  timesheetsmodel.get(index).statuses
                                 .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
                                 .filter(function(x){return !x.status_ignored;})
                                 .pop().status_color;
+                    */
                         source: icon;
                         }
                     }
@@ -193,10 +225,10 @@ Item {
                     anchors.left: icon.right;
                     anchors.right: iconfunning.left;
                     anchors.leftMargin: icon.height/5;
-                    anchors.topMargin: typeof (modelData.ticket) !== 'undefined' ? 0 : (parent.height-height)/2;
+                    anchors.topMargin: isTicket(index) ? 0 : (parent.height-height)/2;
                     font.pixelSize: appStyle.labelSize;
                     color: appStyle.textColor;
-                    text: modelData.description;
+                    text: description;
                     }
 
                 Item {
@@ -204,7 +236,7 @@ Item {
                     anchors.top: tname.bottom;
                     anchors.left: tname.left;
                     anchors.bottom: parent.bottom;
-                    visible: typeof (modelData.ticket) !== 'undefined';
+                    visible: isTicket(index);
 
                     Text {
                         id: lbl1;
@@ -222,18 +254,21 @@ Item {
                         anchors.left: lbl1.right;
                         anchors.leftMargin: appStyle.smallSize/2;
                         color: appStyle.textColor;
-                        text: typeof modelData !== 'undefined' && typeof modelData.timesheets !== 'undefined'
-                              ? Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                        text: isTicket(index)
+                              ? Number(timesheets.reduce(function(accumulator, currentValue) {
                                     return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
                                     }, 0)).formatHHMMSS()
                               : "";
 
                         Component.onCompleted: {
-                            if (typeof modelData.ticket === 'undefined') { return; }
+                            if (!isTicket(index)) { return; }
+/*
+                            // fix časovač
                             timer.triggered.connect(function() {
-                                if (typeof modelData == 'undefined') { return; }
-                                if (typeof modelData.timesheets == 'undefined') { return; }
-                                var seconds = Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                                var item = timesheetsmodel.get(index);
+                                if (typeof item.timesheets === 'undefined') { return; }
+                                if (item.timesheets.length === 0) { return; }
+                                var seconds = Number(timesheets.reduce(function(accumulator, currentValue) {
                                             if (typeof currentValue == 'undefined') { return accumulator; }
                                             if (typeof currentValue.date_to == 'undefined') { return accumulator; }
                                             if (typeof currentValue.date_from == 'undefined') { return accumulator; }
@@ -243,8 +278,9 @@ Item {
                                             return accumulator + t
                                             }, 0))
                                 lbl2.text = seconds.formatHHMMSS();
-                                lbl4.text = Math.round(seconds * modelData.price / 3600)
+                                lbl4.text = Math.round(seconds * price / 3600)
                                 });
+*/
                             }
                         }
 
@@ -265,10 +301,11 @@ Item {
                         anchors.left: lbl3.right;
                         anchors.leftMargin: appStyle.smallSize/2;
                         color: appStyle.textColor;
-                        text: (typeof (modelData.ticket) === 'undefined') ? '' 
-                                :  Math.round(Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                        text: isCategory(index) 
+                                ? '' 
+                                :  Math.round(Number(timesheets.reduce(function(accumulator, currentValue) {
                                         return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
-                                        }, 0)) * modelData.price / 3600);
+                                        }, 0)) * price / 3600);
                         }
 
                     Text {
@@ -278,8 +315,8 @@ Item {
                         anchors.left: lbl4.right;
                         anchors.leftMargin: appStyle.smallSize;
                         color: appStyle.textColor;
-                        text:  typeof modelData !== 'undefined' && typeof modelData.statuses !== 'undefined'
-                                ? modelData.statuses
+                        text:  isTicket(index) && timesheetsmodel.get(index).statuses.length > 0
+                                ? timesheetsmodel.get(index).statuses
                                     .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
                                     .filter(function(x){return !x.status_ignored;})
                                     .pop().status_description
@@ -291,18 +328,13 @@ Item {
 
                 Image {
                     id: iconfunning;
-                    source: isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
+                    source: isTimesheetRunning(timesheetsmodel.get(index)) ? "stopwatch.svg" : "stopwatch-light.svg";
                     height: tname.height;
                     fillMode: Image.PreserveAspectFit;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: iconedit.left;
                     anchors.rightMargin: width/3;
-                    visible: typeof (modelData.ticket) === 'undefined' || typeof (modelData.statuses) === 'undefined' || modelData.statuses.length === 0 ? false
-                            :  modelData.statuses
-                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                    .filter(function(x){return !x.status_ignored;})
-                                    .pop().status_can_be_run;
-
+                    visible: canBeRun(index);
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
                         anchors.fill: iconfunning;
@@ -319,7 +351,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: checker.left;
                     anchors.rightMargin: width/3;
-                    visible: (typeof (modelData.ticket) !== 'undefined');
+                    visible: isTicket(index);
 
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
@@ -331,11 +363,11 @@ Item {
                     MouseArea {
                         anchors.fill: parent;
                         onClicked: {
-                            if (typeof modelData.ticket !== 'undefined') {
-                                initpage.loadPage ("PageTicket.qml", { ticket: modelData.ticket } );
+                            if (isTicket(index)) {
+                                initpage.loadPage ("PageTicket.qml", { ticket: timesheetsmodel.get(index).ticket } );
                                 return;
                                 }
-                            loadData(modelData.category, modelData.parent_category);
+                            loadData(category, parent_category);
                             }
                         }
                     }
@@ -347,8 +379,8 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: parent.right;
                     anchors.rightMargin: 0;
-                    visible: (typeof (modelData.ticket) !== 'undefined');
-                    checked: modelData.checked;
+                    visible: isTicket(index);
+                    checked: checked;
                     onClicked: {
                         }
                     }
@@ -359,15 +391,12 @@ Item {
                     anchors.right: iconfunning.right;
                     anchors.bottom: parent.bottom;
                     onClicked: {
-                        if (typeof modelData.ticket !== 'undefined') {
-                            var can_be_run = modelData.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;}).filter(function(x){return !x.status_ignored;}).pop().status_can_be_run;
-                            if (can_be_run === false) { return; }
-                            console.log("can_be_run: " + can_be_run);
-                            toggleTimesheet(modelData);
-                            iconfunning.source = isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
+                        if (isTicket(index) && canBeRun(index)) {
+                            toggleTimesheet(item);
+                            iconfunning.source = isTimesheetRunning(item) ? "stopwatch.svg" : "stopwatch-light.svg";
                             return;
                             }
-                        loadData(modelData.category, modelData.parent_category);
+                        loadData(category, parent_category);
                         }
                     }
 
@@ -444,6 +473,7 @@ Item {
         }
 
     function loadData(category) {
+        console.log("loadData(category) : " + category + " " + initpage.parentCategory);
         if (category == -999) {
             category = initpage.parentCategory;
             }
@@ -467,40 +497,52 @@ Item {
             api1.category(initpage.currentCategory);
             }
 
+        timesheetsmodel.clear();
         var data = new Array();
         if (initpage.currentCategory === 0) {
-            data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
+            timesheetsmodel.append({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
             }
 
         if (allActiveTickets) {
-            data.push({category: 0, parent_category: 0, description: '..', categories: [], price: 0 });
-            listview.model = data;
+            console.log("Nacitam allActiveTickets");
+            timesheetsmodel.append({category: 0, parent_category: 0, description: '..', categories: [], price: 0 });
+            // listview.model = data;
             var api4 = new Api.Api();
             api4.onFinished = function(json) {
                 // filter selected categories
                 var stats = initpage.statusesArray();
-                json = json.filter(function(x) {
+                console.log("PageCategories " + JSON.stringify(json));
+                json = json
+                    .filter(function(x) {
                         if (typeof x.statuses === 'undefined') { return true; }
                         if (x.statuses.length === 0) { return true; }
                         var x_status = x.statuses
                                 .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
                                 .filter(function(s){return !s.status_ignored;}).pop().status;
-                        return stats.includes(x_status);
+                        return stats.includes(x_status)
+                        })
+                    .map(function(x) {
+                        var n = x;
+                        n.checked = true;
+                        return n;
                         });
 
+                timesheetsmodel.appendArray(json);
                 sumToFooter(json);
-                listview.model = listview.model.concat(json);
+                // listview.model = listview.model.concat(json);
                 }
             api4.ticketsvwall();
             }
 
         if (!allActiveTickets) {
+            console.log("Nacitam not allActiveTickets " + initpage.currentCategory);
             var api2 = new Api.Api();
             api2.onFinished = function(json) {
                 if (initpage.currentCategory != 0) {
-                    data.push({category: -999, parent_category: 0, description: '..', categories: [], price: 0 });
+                    timesheetsmodel.append({category: -999, parent_category: 0, description: '..', categories: [], price: 0 });
                     }
-                listview.model = data.concat(json);
+                timesheetsmodel.appendArray(json);
+                // listview.model = data.concat(json);
                 var api3 = new Api.Api();
                 api3.onFinished = function(json) {
                     // filter selected categories
@@ -518,15 +560,10 @@ Item {
                             var n = x;
                             n.checked = true;
                             return n;
-/*
-                            })
-                        .map(function(x) {
-                            model.append(x);
-                            return x;
-*/
                             });
+                    timesheetsmodel.appendArray(json);
                     sumToFooter(json);
-                    listview.model = listview.model.concat(json);
+                    // listview.model = listview.model.concat(json);
                     }
                 api3.ticketsvw(initpage.currentCategory);
                 }
@@ -562,7 +599,15 @@ Item {
         }
 
     ListModel {
-        id: model;
+        id: timesheetsmodel;
+        function appendArray(json) {
+            for (var i=0; i<json.length; i++) { 
+                var x = json[i];
+                x.category        = Number(json[i].category);
+                x.parent_category = Number(json[i].parent_category);
+                append(x);
+                }
+            }
         }
 
     function absolutePosition(node) {
