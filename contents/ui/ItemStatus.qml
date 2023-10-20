@@ -49,9 +49,11 @@ Item {
         text: qsTr("+");
         style: AppButtonStyle {}
         onClicked: {
+            var previousStatus = [];
+            previousStatus.push((statuses.length > 0) ? statuses[statuses.length-1].status : null);
             dialog.description = '';
             dialog.category = xxxx.category;
-            dialog.previousStatus = (statuses.length > 0) ? statuses[statuses.length-1].status : null;
+            dialog.previousStatus = previousStatus;
             dialog.visible = true;
             }
         }

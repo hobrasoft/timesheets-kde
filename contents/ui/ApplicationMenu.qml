@@ -77,6 +77,18 @@ Rectangle {
                 }
 
             Button {
+                text: qsTr("Add new status to selected tickets");
+                Layout.fillWidth: true;
+                Layout.preferredHeight: appStyle.labelSize * 2.5;
+                style: AppButtonStyleContextMenu { }
+                enabled: pageCategories.somethingChecked;
+                onClicked: {
+                    root.visible = false;
+                    pageCategories.addStatusToSelectedTickets();
+                    }
+                }
+
+            Button {
                 text: qsTr("Create report");
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
@@ -101,7 +113,7 @@ Rectangle {
                     checkedState: statuses.get(index).checked ? Qt.Checked : Qt.UnChecked;
                     onCheckedStateChanged: {
                         statuses.setProperty(index, "checked", checkedState == Qt.Checked);
-                        console.log("----------------- on checked state changed: " + checkedState + " " + (checkedState == Qt.Checked) + " " + statuses.get(index).checked );
+                        // console.log("----------------- on checked state changed: " + checkedState + " " + (checkedState == Qt.Checked) + " " + statuses.get(index).checked );
                         }
                     }
                 }

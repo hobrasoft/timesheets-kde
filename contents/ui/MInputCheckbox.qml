@@ -24,7 +24,7 @@ CheckBox {
             border.width: 3;
             Rectangle {
                 visible: control.checkedState == Qt.Checked;
-                color: "#b0808080";
+                color: parent.border.color;
                 radius: height/8;
                 anchors.margins: 7;
                 anchors.fill: parent;

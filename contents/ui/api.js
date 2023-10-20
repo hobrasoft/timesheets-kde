@@ -2,12 +2,13 @@
 class Api {
     constructor() {
         this.onFinished = function(data) { }
-        this.onError = function(errorText) { console.log(errorText); }
+        this.onError = function(errorText) { console.log("error1: " + errorText); }
 
         this.get = function(url, params) {
             var rq = new XMLHttpRequest();
             var todleto = this;
             rq.onerror = function() {
+                console.log("error2: " + rq.responseText);
                 todleto.onError(rq.responseText);
                 };
             rq.onreadystatechange = function() {
@@ -24,8 +25,9 @@ class Api {
         this.put = function(url, data) {
             var rq = new XMLHttpRequest();
             var todleto = this;
+            console.log(data);
             rq.onerror = function() {
-                console.log(rq.responseText);
+                console.log("error3: " + rq.responseText);
                 todleto.onError(rq.responseText);
                 };
             rq.onreadystatechange = function() {
@@ -43,7 +45,7 @@ class Api {
             var rq = new XMLHttpRequest();
             var todleto = this;
             rq.onerror = function() {
-                console.log(rq.responseText);
+                console.log("error4: " + rq.responseText);
                 todleto.onError(rq.responseText);
                 };
             rq.onreadystatechange = function() {
@@ -64,7 +66,7 @@ class Api {
         this.ticketsvwall = function () { this.get("ticketsvw", "all=" + initpage.all()); }
         this.ticketvw = function (ticket) { this.get("ticketsvw/"+ticket+"?all=true"); }
         this.saveCategory = function (c) { this.put("categories/", JSON.stringify(c)); }
-        this.statuses = function (category, prevstatus) { this.get("statuses", "category="+category+"&previousStatus="+prevstatus); }
+        this.statuses = function (category, prevstatus) { this.get("statuses", "category="+category+"&previousStatuses="+JSON.stringify(prevstatus)); }
         this.users = function (user) { this.get("users/" + user); }
         this.saveTicket = function(t) { this.put("ticketsvw/", JSON.stringify(t)); }
         this.startTimesheet = function(t) { this.get("timesheet/start/" + t); }
@@ -74,6 +76,7 @@ class Api {
         this.authenticate = function(user, password) { this.get("authenticate"); }
         this.statusesAll = function () { this.get("statuses"); }
         this.overview = function (category, statuses) { this.get("overview/" + category,  "statuses=" + statuses.join(",")); }
+        this.appendStatus = function (c) { c.user = initpage.userid; c.date = new Date(); this.put("ticketstatus/", JSON.stringify(c)); }
         }
 }
 
