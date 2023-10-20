@@ -18,6 +18,7 @@ Item {
     property real inputHeight: labelSize * 2.5
     property string textColor: theme.textColor;
     property string textColorDisabled: "#80ffffff";
+    property string backgroundColor: theme.backgroundColor;
 
     property real h1Size: ratio / 22;
     property real h2Size: ratio / 24;

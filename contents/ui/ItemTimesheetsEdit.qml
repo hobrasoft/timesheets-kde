@@ -12,7 +12,7 @@ Rectangle {
     id: root;
     visible: false;
     anchors.fill: parent;
-    color: "#303030"
+    color: appStyle.backgroundColor;
 
     property real price: 0;
     property bool showprice: true;

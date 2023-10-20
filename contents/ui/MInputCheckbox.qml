@@ -31,7 +31,7 @@ CheckBox {
                 }
             Rectangle {
                 visible: control.checkedState == Qt.PartiallyChecked;
-                border.color: "#80808080";
+                border.color: appStyle.textColor;
                 border.width: 3;
                 color: "transparent";
                 radius: height/8;
