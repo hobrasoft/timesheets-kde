@@ -8,11 +8,82 @@ import QtGraphicalEffects 1.12
 import "api.js" as Api
 
 Item {
-    id: root;
+    id: pageCategories;
     anchors.fill: parent;
 
+    property bool somethingChecked: false;
+    property var checkedTickets: [];
     property var timesheets: [];
     property bool allActiveTickets: false;
+
+                                    
+    function isTicket(data) {  
+        if (typeof data !== 'object') { return false; }
+        if (typeof data.ticket === 'undefined') { return false; }
+        return true; 
+        }           
+                    
+    function isCategory(data) {
+        return !isTicket(data);
+        }
+
+    function isChecked(data) {
+        if (typeof data !== 'object') { return false; }
+        if (typeof data.ticket === 'undefined') { return false; }
+        return checkedTickets.includes(data.ticket);
+        }
+                    
+    function canBeRun(data) {
+        if (typeof data != 'object') { return false; }
+        if (typeof data.ticket === 'undefined') { return false; }
+        if (typeof data.statuses === 'undefined') { return false; }
+        var statuses = data.statuses; 
+        if (statuses.length === 0) { return false; }
+        return statuses
+              .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+              .filter(function(x){return !x.status_ignored;})
+              .pop().status_can_be_run;
+        }
+
+    function status(data) {
+        if (isCategory(data)) { return null; }
+        if (typeof data.statuses === 'undefined') { return null; }
+        if (Array.isArray(data.statuses) === false) { return null; } 
+        var statuses = data.statuses;
+        if (statuses.length == 0) { return null; } 
+        statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+        statuses = statuses.filter(function(x){return !x.status_ignored;})
+        var laststatus = statuses.pop();
+        if (typeof laststatus.status === 'undefined') { return null; }
+        return laststatus.status;
+        }
+
+    function statusColor(data) {
+        var color = "#80ffffff";
+        if (isCategory(data)) { return color; }
+        if (typeof data.statuses === 'undefined') { return color; }
+        if (Array.isArray(data.statuses) === false) { return color; }
+        var statuses = data.statuses;
+        if (statuses.length == 0) { return color; }
+        statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+        statuses = statuses.filter(function(x){return !x.status_ignored;})
+        var status = statuses.pop();
+        if (typeof status.status_color === 'undefined') { return color; }
+        return status.status_color;
+        }
+
+    function statusDescription(data) {
+        if (!isTicket(data)) { return ''; }
+        if (typeof data.statuses === 'undefined') { return ''; }
+        if (Array.isArray(data.statuses) === false) { return ''; }
+        var statuses = data.statuses;
+        if (statuses.length == 0) { return ''; }
+        statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+        statuses = statuses.filter(function(x){return !x.status_ignored;})
+        var status = statuses.pop();
+        if (typeof status.status_description === 'undefined') { return ''; }
+        return status.status_description;
+        }
 
     function isTimesheetRunning(x) {
         if (typeof x.timesheets === 'undefined') { return false; }
@@ -64,6 +135,124 @@ Item {
         if (!found) { timesheets.push(timesheet); }
         var api1 = new Api.Api();
         api1.startTimesheet(ticket);
+        }
+
+    function addStatusToSelectedTickets() {
+
+        var previousStatuses = [];
+        for (var i=0; i< listview.model.length; i++) {
+            if (!isChecked(listview.model[i])) { continue; }
+            var x = status(listview.model[i]);
+            if (previousStatuses.includes(x)) { continue; }
+            previousStatuses.push(x);
+            }
+        dialog.previousStatus = previousStatuses;
+        dialog.description = '';
+        dialog.category = initpage.currentCategory;
+        dialog.visible = true;
+        }
+
+    function loadData(category) {
+        if (category == -999) {
+            category = initpage.parentCategory;
+            }
+        initpage.parentCategory = initpage.currentCategory;
+        initpage.currentCategory = category;
+
+        // Get the title
+        allActiveTickets = (initpage.currentCategory == -1)
+        if (allActiveTickets) {
+            title.text = qsTr("All active tickets");
+            }
+        if (initpage.currentCategory == 0) {
+            title.text = "/";
+            }
+        if (initpage.currentCategory > 0) {
+            var api1 = new Api.Api();
+            api1.onFinished = function(json) {
+                title.text = '(' + initpage.currentCategory + ') ' + json.description;
+                initpage.parentCategory = json.parent_category;
+                }
+            api1.category(initpage.currentCategory);
+            }
+
+        var checkedTickets = new Array();
+        var data = new Array();
+        if (initpage.currentCategory === 0) {
+            data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
+            }
+
+        if (allActiveTickets) {
+            data.push({category: 0, parent_category: 0, description: '..', categories: [], price: 0 });
+            listview.model = data;
+            var api4 = new Api.Api();
+            api4.onFinished = function(json) {
+                // filter selected categories
+                var stats = initpage.statusesArray();
+                json = json.filter(function(x) {
+                        if (typeof x.statuses === 'undefined') { return true; }
+                        if (x.statuses.length === 0) { return true; }
+                        var x_status = x.statuses
+                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                .filter(function(s){return !s.status_ignored;}).pop().status;
+                        return stats.includes(x_status);
+                        });
+
+                sumToFooter(json);
+                listview.model = listview.model.concat(json);
+                }
+            api4.ticketsvwall();
+            }
+
+        if (!allActiveTickets) {
+            var api2 = new Api.Api();
+            api2.onFinished = function(json) {
+                if (initpage.currentCategory != 0) {
+                    data.push({category: -999, parent_category: 0, description: '..', categories: [], price: 0 });
+                    }
+                listview.model = data.concat(json);
+                var api3 = new Api.Api();
+                api3.onFinished = function(json) {
+                    // filter selected categories
+                    var stats = initpage.statusesArray();
+                    json = json
+                        .filter(function(x) {
+                            if (typeof x.statuses === 'undefined') { return true; }
+                            if (x.statuses.length === 0) { return true; }
+                            var x_status = x.statuses
+                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
+                                    .filter(function(s){return !s.status_ignored;}).pop().status;
+                            return stats.includes(x_status);
+                            })
+                        .map(function(x) {
+                            var n = x;
+                            n.checked = true;
+                            return n;
+                            });
+                    sumToFooter(json);
+                    listview.model = listview.model.concat(json);
+                    }
+                api3.ticketsvw(initpage.currentCategory);
+                }
+            api2.categoriestree(initpage.currentCategory);
+            }
+        }
+
+
+    function sumToFooter(data) {
+        if (typeof data !== 'object') { return; }
+        if (typeof data.length != 'number') { return; }
+        var time = 
+            Number(data.reduce(function(a1, v1) {
+                return a1 + v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                }, 0)).formatHHMMSS();
+        var price = 
+            Number(data.reduce(function(a1, v1) {
+                return a1 + v1.price * v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                }, 0)); 
+        var price = Math.round(price/3600);
+        footerTime.text = time;
+        footerPrice.text = price;
         }
 
     Item {
@@ -168,7 +357,7 @@ Item {
 
                 Image {
                     id: icon;
-                    source: typeof (modelData.ticket) === 'undefined' ? "folder.svg" : "check.svg";
+                    source: isCategory(modelData) ? "folder.svg" : "check.svg";
                     height: tname.height;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.left: parent.left;
@@ -177,12 +366,7 @@ Item {
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
                         anchors.fill: icon;
-                        color: (typeof (modelData.ticket) === 'undefined') 
-                            ? "#80ffffff" 
-                            :  modelData.statuses
-                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                .filter(function(x){return !x.status_ignored;})
-                                .pop().status_color;
+                        color: statusColor(modelData);
                         source: icon;
                         }
                     }
@@ -193,7 +377,7 @@ Item {
                     anchors.left: icon.right;
                     anchors.right: iconfunning.left;
                     anchors.leftMargin: icon.height/5;
-                    anchors.topMargin: typeof (modelData.ticket) !== 'undefined' ? 0 : (parent.height-height)/2;
+                    anchors.topMargin: isTicket(modelData) ? 0 : (parent.height-height)/2;
                     font.pixelSize: appStyle.labelSize;
                     color: appStyle.textColor;
                     text: modelData.description;
@@ -204,7 +388,7 @@ Item {
                     anchors.top: tname.bottom;
                     anchors.left: tname.left;
                     anchors.bottom: parent.bottom;
-                    visible: typeof (modelData.ticket) !== 'undefined';
+                    visible: isTicket(modelData);
 
                     Text {
                         id: lbl1;
@@ -229,7 +413,7 @@ Item {
                               : "";
 
                         Component.onCompleted: {
-                            if (typeof modelData.ticket === 'undefined') { return; }
+                            if (!isTicket(modelData)) { return; }
                             timer.triggered.connect(function() {
                                 if (typeof modelData == 'undefined') { return; }
                                 if (typeof modelData.timesheets == 'undefined') { return; }
@@ -265,10 +449,11 @@ Item {
                         anchors.left: lbl3.right;
                         anchors.leftMargin: appStyle.smallSize/2;
                         color: appStyle.textColor;
-                        text: (typeof (modelData.ticket) === 'undefined') ? '' 
-                                :  Math.round(Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
+                        text: isTicket(modelData) && typeof modelData.timesheets.length === 'number' 
+                                ? Math.round(Number(modelData.timesheets.reduce(function(accumulator, currentValue) {
                                         return accumulator + currentValue.date_from.secsTo(currentValue.date_to);
-                                        }, 0)) * modelData.price / 3600);
+                                        }, 0)) * modelData.price / 3600)
+                                : '';
                         }
 
                     Text {
@@ -278,14 +463,8 @@ Item {
                         anchors.left: lbl4.right;
                         anchors.leftMargin: appStyle.smallSize;
                         color: appStyle.textColor;
-                        text:  typeof modelData !== 'undefined' && typeof modelData.statuses !== 'undefined'
-                                ? modelData.statuses
-                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                    .filter(function(x){return !x.status_ignored;})
-                                    .pop().status_description
-                                : "";
+                        text:  statusDescription(modelData);
                         }
-
 
                     }
 
@@ -297,12 +476,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: iconedit.left;
                     anchors.rightMargin: width/3;
-                    visible: typeof (modelData.ticket) === 'undefined' || typeof (modelData.statuses) === 'undefined' || modelData.statuses.length === 0 ? false
-                            :  modelData.statuses
-                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                    .filter(function(x){return !x.status_ignored;})
-                                    .pop().status_can_be_run;
-
+                    visible: canBeRun(modelData);
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
                         anchors.fill: iconfunning;
@@ -319,7 +493,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: checker.left;
                     anchors.rightMargin: width/3;
-                    visible: (typeof (modelData.ticket) !== 'undefined');
+                    visible: isTicket(modelData);
 
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
@@ -331,7 +505,7 @@ Item {
                     MouseArea {
                         anchors.fill: parent;
                         onClicked: {
-                            if (typeof modelData.ticket !== 'undefined') {
+                            if (isTicket(modelData)) {
                                 initpage.loadPage ("PageTicket.qml", { ticket: modelData.ticket } );
                                 return;
                                 }
@@ -347,9 +521,22 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: parent.right;
                     anchors.rightMargin: 0;
-                    visible: (typeof (modelData.ticket) !== 'undefined');
-                    checked: modelData.checked;
+                    visible: isTicket(modelData);
+                    checked: isChecked(modelData);
                     onClicked: {
+                        if (checker.checked && !isChecked(modelData)) {
+                            checkedTickets.push(modelData.ticket);
+                            somethingChecked = checkedTickets.length > 0;
+                            return;
+                            }
+                        if (!checker.checked && isChecked(modelData)) {
+                            const index = checkedTickets.indexOf(modelData.ticket);
+                            if (index < 0) { return; }
+                            checkedTickets.splice(index, 1);
+                            somethingChecked = checkedTickets.length > 0;
+                            return;
+                            }
+                            
                         }
                     }
 
@@ -359,10 +546,8 @@ Item {
                     anchors.right: iconfunning.right;
                     anchors.bottom: parent.bottom;
                     onClicked: {
-                        if (typeof modelData.ticket !== 'undefined') {
-                            var can_be_run = modelData.statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;}).filter(function(x){return !x.status_ignored;}).pop().status_can_be_run;
-                            if (can_be_run === false) { return; }
-                            console.log("can_be_run: " + can_be_run);
+                        if (isTicket(modelData)) {
+                            if (!canBeRun(modelData)) { return; }
                             toggleTimesheet(modelData);
                             iconfunning.source = isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
                             return;
@@ -443,128 +628,43 @@ Item {
         api7.authenticate(initpage.username, initpage.password);
         }
 
-    function loadData(category) {
-        if (category == -999) {
-            category = initpage.parentCategory;
-            }
-        initpage.parentCategory = initpage.currentCategory;
-        initpage.currentCategory = category;
-
-        // Get the title
-        allActiveTickets = (initpage.currentCategory == -1)
-        if (allActiveTickets) {
-            title.text = qsTr("All active tickets");
-            }
-        if (initpage.currentCategory == 0) {
-            title.text = "/";
-            }
-        if (initpage.currentCategory > 0) {
-            var api1 = new Api.Api();
-            api1.onFinished = function(json) {
-                title.text = '(' + initpage.currentCategory + ') ' + json.description;
-                initpage.parentCategory = json.parent_category;
-                }
-            api1.category(initpage.currentCategory);
-            }
-
-        var data = new Array();
-        if (initpage.currentCategory === 0) {
-            data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
-            }
-
-        if (allActiveTickets) {
-            data.push({category: 0, parent_category: 0, description: '..', categories: [], price: 0 });
-            listview.model = data;
-            var api4 = new Api.Api();
-            api4.onFinished = function(json) {
-                // filter selected categories
-                var stats = initpage.statusesArray();
-                json = json.filter(function(x) {
-                        if (typeof x.statuses === 'undefined') { return true; }
-                        if (x.statuses.length === 0) { return true; }
-                        var x_status = x.statuses
-                                .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                .filter(function(s){return !s.status_ignored;}).pop().status;
-                        return stats.includes(x_status);
-                        });
-
-                sumToFooter(json);
-                listview.model = listview.model.concat(json);
-                }
-            api4.ticketsvwall();
-            }
-
-        if (!allActiveTickets) {
-            var api2 = new Api.Api();
-            api2.onFinished = function(json) {
-                if (initpage.currentCategory != 0) {
-                    data.push({category: -999, parent_category: 0, description: '..', categories: [], price: 0 });
-                    }
-                listview.model = data.concat(json);
-                var api3 = new Api.Api();
-                api3.onFinished = function(json) {
-                    // filter selected categories
-                    var stats = initpage.statusesArray();
-                    json = json
-                        .filter(function(x) {
-                            if (typeof x.statuses === 'undefined') { return true; }
-                            if (x.statuses.length === 0) { return true; }
-                            var x_status = x.statuses
-                                    .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                    .filter(function(s){return !s.status_ignored;}).pop().status;
-                            return stats.includes(x_status);
-                            })
-                        .map(function(x) {
-                            var n = x;
-                            n.checked = true;
-                            return n;
-/*
-                            })
-                        .map(function(x) {
-                            model.append(x);
-                            return x;
-*/
-                            });
-                    sumToFooter(json);
-                    listview.model = listview.model.concat(json);
-                    }
-                api3.ticketsvw(initpage.currentCategory);
-                }
-            api2.categoriestree(initpage.currentCategory);
-            }
-        }
-
-
-    function sumToFooter(data) {
-        var time = 
-            Number(data.reduce(function(a1, v1) {
-                return a1 + v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
-                }, 0)).formatHHMMSS();
-        var price = 
-            Number(data.reduce(function(a1, v1) {
-                return a1 + v1.price * v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
-                }, 0)); 
-        var price = Math.round(price/3600);
-        footerTime.text = time;
-        footerPrice.text = price;
-        }
-
-
     AppStyle { id: appStyle; }
 
 
     ApplicationMenu {
         id: appmenu;
         onStatusesChanged: {
-            // console.log("---------------- PageCategories.onStatusesChanged: ");
             loadData(initpage.currentCategory);
             }
         }
 
-    ListModel {
-        id: model;
+    ItemStatusDialog { 
+        id: dialog; 
+        parent: pageCategories;
+        onStatusAdded: {
+            for (var i=0; i<checkedTickets.length; i++) {
+                var api = new Api.Api();
+                api.onFinished = function(json) {
+                    };
+                api.onError = function(json) {
+                    };
+                api.appendStatus({ "ticket": checkedTickets[i], "status": dialog.status, "description": dialog.description});
+                }
+            timerReload.start();
+            }
+        Timer {
+            id: timerReload;
+            interval: 1000;
+            onTriggered: {
+                checkedTickets = new Array();
+                loadData(initpage.currentCategory);
+                }
+            }
         }
+        
 
+
+/*
     function absolutePosition(node) {
         var returnPos = {};
         returnPos.x = 0;
@@ -576,6 +676,7 @@ Item {
             }
         return returnPos;
         }
+*/
 
 }
 

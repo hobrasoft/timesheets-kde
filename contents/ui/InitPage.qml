@@ -21,6 +21,7 @@ Item {
     property bool   show_price: true;
     property int    ticket: 0;
     property var    item: null;
+    property var    allStatuses: [];
 
     function all() {
         for (var i=0; i<statuses.count; i++) {
@@ -47,9 +48,10 @@ Item {
         Component.onCompleted: {
             var api = new Api.Api();
             api.onFinished = function(json) {
+                allStatuses = [];
                 for (var i=0; i<json.length; i++) {
-                    console.log("-------------------- " + JSON.stringify(json[i]));
                     if (json[i].ignored) { continue; }
+                    allStatuses.push(json[i].status);
                     append({status: json[i].status, 
                             description: json[i].description, 
                             checked: !(json[i].closed),

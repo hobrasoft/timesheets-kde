@@ -13,7 +13,7 @@ Rectangle {
     // Background {}
     color: "#303030"
 
-    property string previousStatus: "";
+    property var previousStatus: null;
     property string status: "";
     property string status_description: "";
     property string status_color: "";
@@ -24,18 +24,20 @@ Rectangle {
 
     onVisibleChanged: {
         if (!visible) { return; }
-        console.log("category " + category + " previousStatus " + previousStatus);
-        t2.text = root.description;
-        header.saveEnabled = false;
-        var api = new Api.Api();
-        api.onFinished = function(json) {
-            console.log( JSON.stringify(json) );
-            statlistview.model = json;
-            for (var i=0; i<statlistview.model.length; i++) {
-                statlistview.model[i].checked = false;
-                }
-            };
-        api.statuses(category, previousStatus);
+        if (typeof previousStatus === 'object' && Array.isArray(previousStatus)) {
+            t2.text = root.description;
+            header.saveEnabled = false;
+            var pStatus = previousStatus.map(function(x) { if (x == null) { x = ''; } return x; });
+            var api = new Api.Api();
+            api.onFinished = function(json) {
+                // console.log( JSON.stringify(json) );
+                statlistview.model = json;
+                for (var i=0; i<statlistview.model.length; i++) {
+                    statlistview.model[i].checked = false;
+                    }
+                };
+            api.statuses(category, pStatus);
+            }
         }
 
     function selectedStatus(index) {
