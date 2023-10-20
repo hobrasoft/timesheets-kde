@@ -19,7 +19,7 @@ CheckBox {
             implicitWidth: 30;
             implicitHeight: 30;
             radius: height/8
-            color: control.pressed ? "#30ffffff" : "transparent";
+            color: control.pressed ? appStyle.textColor : "transparent";
             border.color: appStyle.textColor;
             border.width: 3;
             Rectangle {
