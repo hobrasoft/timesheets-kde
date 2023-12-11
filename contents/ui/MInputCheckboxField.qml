@@ -27,9 +27,9 @@ Item {
 
     Rectangle {
         anchors.fill: parent;
-        color: (!parent.enabled || parent.readOnly) ? "#10ffffff" : "#80ffffff";
-        border.color: (!parent.enabled || parent.readOnly) ? "lightgray" : "darkgray";
-        border.width: 2;
+        color: Qt.tint(appStyle.backgroundColor, "#80808080");
+        // border.color: (!parent.enabled || parent.readOnly) ? "lightgray" : "darkgray";
+        // border.width: 2;
         radius: 0;
         MouseArea {
             anchors.fill: parent;

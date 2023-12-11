@@ -36,7 +36,7 @@ Rectangle {
         anchors.right: parent.right;
         width: parent.width * 0.7;
         height: childrenRect.height;
-        color: "black";
+        color: Qt.tint(appStyle.backgroundColor, "#20808080");
         radius: 0;
         ColumnLayout {
             anchors.left: parent.left;

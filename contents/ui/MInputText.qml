@@ -22,13 +22,13 @@ Item {
 
     Rectangle {
         anchors.fill: parent;
-        color: (parent.readOnly) ? "transparent" : "#10ffffff";
+        color: Qt.tint(appStyle.backgroundColor, "#20404040");
         radius: 5;
         }
 
     TextInput {
         id: input;
-        color: appStyle.textColor;
+        color: (root.readOnly) ? Qt.tint(appStyle.textColor, "#80808080") : appStyle.textColor;
         selectionColor: "green";
         font.pixelSize: appStyle.labelSize;
         font.bold: false;

@@ -23,12 +23,13 @@ Item {
 
     Rectangle {
         anchors.fill: parent;
-        color: (root.readOnly) ? "transparent" : "#10ffffff";
+        color: Qt.tint(appStyle.backgroundColor, "#20404040");
         radius: 5;
         }
 
     TextArea {
         id: input;
+        // color: (root.readOnly) ? Qt.tint(appStyle.textColor, "#80808080") : appStyle.textColor;
         font.pixelSize: appStyle.textSize;
         font.bold: false;
         anchors.fill: parent;

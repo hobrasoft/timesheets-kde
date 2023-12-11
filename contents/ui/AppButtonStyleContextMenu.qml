@@ -31,11 +31,9 @@ ButtonStyle {
         }
 
     background: Rectangle {
-        color: (role == roleDanger) ? ((control.pressed) ? "#60ffa0a0" : "#80ffa0a0")
-                                    : ((control.pressed) ? "#60ffffff" : ((control.enabled) ? "#80ffffff" : "#10ffffff" ) )
+        color: (role == roleDanger) ? ((control.pressed) ? Qt.tint(appStyle.backgroundColor, "#20808080") : Qt.tint(appStyle.backgroundColor, "#80ff8080"))
+                                    : ((control.pressed) ? Qt.tint(appStyle.backgroundColor, "#20808080") : Qt.tint(appStyle.backgroundColor, "#80808080"))
                                     ;
-        border.color: (control.enabled) ? "darkgray" : "lightgray";
-        border.width: 1;
         radius: 0;
         }
 }
