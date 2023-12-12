@@ -10,7 +10,7 @@ Rectangle {
     id: root;
     visible: false;
     anchors.fill: parent;
-    color: "#80000000"
+    color: "#30000000";
 
     property alias text: lbl.text;
 
@@ -30,7 +30,7 @@ Rectangle {
         anchors.centerIn: parent;
         width: parent.width*0.8;
         height: parent.height/3
-        color: "#20ffffff"
+        color: Qt.tint(appStyle.backgroundColor, "#80000000");
         border.color: "#30ffffff"
         border.width: 1;
         clip: true;

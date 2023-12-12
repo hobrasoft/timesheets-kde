@@ -6,12 +6,11 @@ import QtQuick 2.7
 import QtQuick.Controls 1.4
 import 'api.js' as Api;
 
-Rectangle {
+Item {
     id: root;
     visible: false;
     anchors.fill: parent;
-    // Background {}
-    color: "#303030"
+    BackgroundOver {}
 
     property var previousStatus: null;
     property string status: "";

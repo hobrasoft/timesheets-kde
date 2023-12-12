@@ -15,7 +15,7 @@ Rectangle {
     color: appStyle.backgroundColor;
 
     property real price: 0;
-    property bool showprice: true;
+    property bool show_price: true;
     property string date_from: null;
     property string date_to: null;
     property int timesheetId: 0;
@@ -119,14 +119,14 @@ Rectangle {
                 text: qsTr("Price");
                 font.pixelSize: appStyle.labelSize;
                 color: appStyle.textColor;
-                visible: showprice;
+                visible: show_price;
                 }
             Text {
                 id: t_price;
                 color: appStyle.textColor;
                 font.pixelSize: appStyle.labelSize;
                 text: " " ;
-                visible: showprice;
+                visible: show_price;
                 }
             }
 

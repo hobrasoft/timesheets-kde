@@ -14,9 +14,34 @@ Item {
     property bool somethingChecked: false;
     property var checkedTickets: [];
     property var timesheets: [];
+    property var usersList: [];
+    property var categoriesList: [];
     property bool allActiveTickets: false;
 
-                                    
+
+    function userName(id) {
+        for (var i=0; i<usersList.length; i++) {
+            if (usersList[i].user == id) {
+                return usersList[i].name;
+                }
+            }
+        return "????";
+        }
+
+    function categoriesToRoot(category, path) {
+        if (typeof path == 'undefined') {
+            return categoriesToRoot(category, new Array()).reverse().join(" » ");
+            }
+        for (var i=0; i<categoriesList.length; i++) {
+            if (categoriesList[i].category == category) {
+                console.log(JSON.stringify(categoriesList[i]));
+                path.push(categoriesList[i].description);
+                return categoriesToRoot(categoriesList[i].parent_category, path);
+                }
+            }
+        return path;
+        }
+
     function isTicket(data) {  
         if (typeof data !== 'object') { return false; }
         if (typeof data.ticket === 'undefined') { return false; }
@@ -31,6 +56,10 @@ Item {
         if (typeof data !== 'object') { return false; }
         if (typeof data.ticket === 'undefined') { return false; }
         return checkedTickets.includes(data.ticket);
+        }
+
+    function extendTicketLine(data) {
+        return allActiveTickets && isTicket(data);
         }
                     
     function canBeRun(data) {
@@ -59,7 +88,7 @@ Item {
         }
 
     function statusColor(data) {
-        var color = "#80ffffff";
+        var color = "transparent";
         if (isCategory(data)) { return color; }
         if (typeof data.statuses === 'undefined') { return color; }
         if (Array.isArray(data.statuses) === false) { return color; }
@@ -153,6 +182,7 @@ Item {
         }
 
     function loadData(category) {
+        busyIndicator.setBusy(true);
         if (category == -999) {
             category = initpage.parentCategory;
             }
@@ -162,15 +192,16 @@ Item {
         // Get the title
         allActiveTickets = (initpage.currentCategory == -1)
         if (allActiveTickets) {
-            title.text = qsTr("All active tickets");
+            header.title = qsTr("All active tickets");
             }
         if (initpage.currentCategory == 0) {
-            title.text = "/";
+            header.title = "/";
             }
         if (initpage.currentCategory > 0) {
             var api1 = new Api.Api();
             api1.onFinished = function(json) {
-                title.text = '(' + initpage.currentCategory + ') ' + json.description;
+                // header.title = '(' + initpage.currentCategory + ') ' + json.description;
+                header.title = json.description;
                 initpage.parentCategory = json.parent_category;
                 }
             api1.category(initpage.currentCategory);
@@ -180,6 +211,20 @@ Item {
         var data = new Array();
         if (initpage.currentCategory === 0) {
             data.push({category: -1, parent_category: 0, description: qsTr('All active tickets'), categories: [], price: 0 });
+            }
+
+        if (allActiveTickets) {
+            var api5 = new Api.Api();
+            api5.onFinished = function(json) {
+                usersList = json;
+                }
+            api5.users();
+
+            var api6 = new Api.Api();
+            api6.onFinished = function(json) {
+                categoriesList = json;
+                }
+            api6.categories();
             }
 
         if (allActiveTickets) {
@@ -238,95 +283,38 @@ Item {
             }
         }
 
-
     function sumToFooter(data) {
         if (typeof data !== 'object') { return; }
         if (typeof data.length != 'number') { return; }
         var time = 
             Number(data.reduce(function(a1, v1) {
-                return a1 + v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                return a1 + v1.timesheets.reduce(function(a2, v2) { return a2 + Number(v2.date_from.secsTo(v2.date_to)) }, 0);
                 }, 0)).formatHHMMSS();
         var price = 
             Number(data.reduce(function(a1, v1) {
-                return a1 + v1.price * v1.timesheets.reduce(function(a2, v2) { return a2 + v2.date_from.secsTo(v2.date_to) }, 0);
+                return a1 + v1.price * v1.timesheets.reduce(function(a2, v2) { return a2 + Number(v2.date_from.secsTo(v2.date_to)) }, 0);
                 }, 0)); 
         var price = Math.round(price/3600);
         footerTime.text = time;
         footerPrice.text = price;
+        busyIndicator.setBusy(false);
         }
 
-    Item {
+    Background {}
+
+    AppBusyIndicator { id: busyIndicator; }
+
+    CategoriesHeader {
         id: header;
-        anchors.top: parent.top;
-        anchors.left: parent.left;
-        anchors.right: parent.right;
-        height: childrenRect.height;
-
-        Text {
-            id: title;
-            anchors.top: parent.top;
-            anchors.left: parent.left;
-            anchors.right: menu.left;
-            font.pixelSize: appStyle.labelSize;
-            text: "Title";
-            color: appStyle.textColor;
+        onReloadClicked: {
+            loadData(initpage.currentCategory);
             }
-
-        Rectangle {
-            id: refresh;
-            anchors.top: menu.top;
-            anchors.right: menu.left;
-            width: height;
-            height: menu.height;
-            radius: 5;
-            color: "#10ffffff";
-            
-            Image {
-                id: refreshIcon;
-                anchors.fill: parent;
-                anchors.margins: 5;
-                source: "sync-alt-solid.svg";
-                fillMode: Image.PreserveAspectFit;
-
-                layer.enabled: true;
-                layer.effect: ColorOverlay {
-                    anchors.fill: refreshIcon;
-                    color: "#80ffffff" 
-                    source: refreshIcon;
-                    }
-                }
-            MouseArea {
-                anchors.fill: parent;
-                onClicked: {
-                    loadData(initpage.currentCategory);
-                    }
-                }
+        onMenuClicked: {
+            appmenu.visible = true;
             }
-
-        Rectangle {
-            id: menu;
-            anchors.top: parent.top;
-            anchors.right: parent.right;
-            width: height;
-            height: parent.height;
-            radius: 5;
-            color: "#10ffffff";
-            
-            Text {
-                anchors.fill: parent;
-                text: "...";
-                verticalAlignment: Text.AlignVCenter;
-                horizontalAlignment: Text.AlignHCenter;
-                color: appStyle.textColor;
-                }
-            MouseArea {
-                anchors.fill: parent;
-                onClicked: {
-                    appmenu.visible = true;
-                    }
-                }
+        onFilterClicked: {
+            filtermenu.visible = true;
             }
-
         }
 
     ListView {
@@ -346,6 +334,38 @@ Item {
             color: "#10ffffff";
             radius: 5;
             clip: true;
+            property string iconColor: appStyle.textColor;
+            Component.onCompleted: {
+                iconColor = 
+                       isCategory(modelData) ? appStyle.textColor 
+                     : isTimesheetRunning(modelData) ? appStyle.textColor 
+                     : "darkgray";
+                }
+
+            function edit(item) {
+                if (isTicket(item)) {
+                    initpage.loadPage ("PageTicket.qml", { ticket: item.ticket } );
+                    return;
+                    }
+                loadData(item.category, item.parent_category);
+                }
+
+            function stopStart(item) {
+                if (isTicket(item)) {
+                    if (!canBeRun(item)) { return; }
+                    toggleTimesheet(item);
+                    iconColor = isTimesheetRunning(item) ? appStyle.textColor : "darkgray";
+                    return;
+                    }
+                loadData(item.category, item.parent_category);
+                }
+
+
+            Rectangle {
+                anchors.fill: parent;
+                radius: parent.radius;
+                color: statusColor(modelData);
+                }
 
             Item {
                 anchors.top: parent.top;
@@ -353,29 +373,61 @@ Item {
                 anchors.right: parent.right;
                 anchors.leftMargin: appStyle.h4Size/7;
                 anchors.rightMargin: appStyle.h4Size/7;
-                height: tname.height + appStyle.h4Size;
+                height: childrenRect.height + appStyle.h4Size;
 
                 Image {
                     id: icon;
-                    source: isCategory(modelData) ? "folder.svg" : "check.svg";
-                    height: tname.height;
+                    source: isCategory(modelData) ? "folder.svg" 
+                          : canBeRun(modelData) ? "stopwatch.svg"
+                          : "";
+                    height: tname.height * 1.1;
+                    width: height;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.left: parent.left;
                     fillMode: Image.PreserveAspectFit;
 
+
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
                         anchors.fill: icon;
-                        color: statusColor(modelData);
+                        color: iconColor;
                         source: icon;
                         }
                     }
 
                 Text {
-                    id: tname;
+                    id: tuserid;
                     anchors.top: parent.top;
                     anchors.left: icon.right;
-                    anchors.right: iconfunning.left;
+                    anchors.right: iconedit.left;
+                    anchors.leftMargin: icon.height/5;
+                    anchors.topMargin: isTicket(modelData) ? 0 : (parent.height-height)/2;
+                    font.pixelSize: appStyle.labelSize;
+                    color: appStyle.textColor;
+                    text: extendTicketLine(modelData) ? modelData.date.formatYYYYMMDDHHMM() + ", " + userName(modelData.user) : "";
+                    height:  extendTicketLine(modelData) ? tname.height : 0;
+                    visible: extendTicketLine(modelData);
+                    }
+
+                Text {
+                    id: tcategory;
+                    anchors.top: tuserid.bottom;
+                    anchors.left: icon.right;
+                    anchors.right: iconedit.left;
+                    anchors.leftMargin: icon.height/5;
+                    anchors.topMargin: isTicket(modelData) ? 0 : (parent.height-height)/2;
+                    font.pixelSize: appStyle.labelSize;
+                    color: appStyle.textColor;
+                    text: extendTicketLine(modelData) ? categoriesToRoot(modelData.category) : "";
+                    height:  extendTicketLine(modelData) ? tname.height : 0;
+                    visible: extendTicketLine(modelData);
+                    }
+
+                Text {
+                    id: tname;
+                    anchors.top: extendTicketLine(modelData) ? tcategory.bottom : parent.top;
+                    anchors.left: icon.right;
+                    anchors.right: iconedit.left;
                     anchors.leftMargin: icon.height/5;
                     anchors.topMargin: isTicket(modelData) ? 0 : (parent.height-height)/2;
                     font.pixelSize: appStyle.labelSize;
@@ -387,7 +439,7 @@ Item {
                     id: line2;
                     anchors.top: tname.bottom;
                     anchors.left: tname.left;
-                    anchors.bottom: parent.bottom;
+                    // anchors.bottom: parent.bottom;
                     visible: isTicket(modelData);
 
                     Text {
@@ -469,31 +521,14 @@ Item {
                     }
 
                 Image {
-                    id: iconfunning;
-                    source: isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
-                    height: tname.height;
-                    fillMode: Image.PreserveAspectFit;
-                    anchors.verticalCenter: parent.verticalCenter;
-                    anchors.right: iconedit.left;
-                    anchors.rightMargin: width/3;
-                    visible: canBeRun(modelData);
-                    layer.enabled: true;
-                    layer.effect: ColorOverlay {
-                        anchors.fill: iconfunning;
-                        color: appStyle.textColor;
-                        source: iconfunning;
-                        }
-                    }
-
-                Image {
                     id: iconedit;
                     source: "edit.svg";
-                    height: tname.height;
+                    height: appStyle.h4Size;
                     fillMode: Image.PreserveAspectFit;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: checker.left;
                     anchors.rightMargin: width/3;
-                    visible: isTicket(modelData);
+                    visible: isTicket(modelData) && initpage.kde;
 
                     layer.enabled: true;
                     layer.effect: ColorOverlay {
@@ -505,19 +540,15 @@ Item {
                     MouseArea {
                         anchors.fill: parent;
                         onClicked: {
-                            if (isTicket(modelData)) {
-                                initpage.loadPage ("PageTicket.qml", { ticket: modelData.ticket } );
-                                return;
-                                }
-                            loadData(modelData.category, modelData.parent_category);
+                            edit(modelData);
                             }
                         }
                     }
 
                 MInputCheckbox {
                     id: checker;
-                    height: 50;
-                    width: height;
+                    // height: tname.height;
+                    // width: height;
                     anchors.verticalCenter: parent.verticalCenter;
                     anchors.right: parent.right;
                     anchors.rightMargin: 0;
@@ -543,17 +574,19 @@ Item {
                 MouseArea {
                     anchors.top: parent.top;
                     anchors.left: parent.left;
-                    anchors.right: iconfunning.right;
+                    anchors.right: iconedit.left;
                     anchors.bottom: parent.bottom;
+                    anchors.rightMargin: 10;
+
                     onClicked: {
-                        if (isTicket(modelData)) {
-                            if (!canBeRun(modelData)) { return; }
-                            toggleTimesheet(modelData);
-                            iconfunning.source = isTimesheetRunning(modelData) ? "stopwatch.svg" : "stopwatch-light.svg";
-                            return;
-                            }
-                        loadData(modelData.category, modelData.parent_category);
+                        stopStart(modelData);
                         }
+
+                    onPressAndHold: {
+                        if (initpage.kde) { return; }
+                        edit(modelData);
+                        }
+
                     }
 
                 }
@@ -620,6 +653,7 @@ Item {
         }
 
     Component.onCompleted: {
+        initpage.loadStatuses();
         var api7 = new Api.Api();
         api7.onFinished = function(json) {
             initpage.userid = json.userid;
@@ -628,11 +662,12 @@ Item {
         api7.authenticate(initpage.username, initpage.password);
         }
 
-    AppStyle { id: appStyle; }
-
-
     ApplicationMenu {
         id: appmenu;
+        }
+
+    FilterMenu {
+        id: filtermenu;
         onStatusesChanged: {
             loadData(initpage.currentCategory);
             }

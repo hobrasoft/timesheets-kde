@@ -6,7 +6,7 @@
     <kcfgfile name=""/>
 
     <group name="General">
-        <entry name="serverUrl" type="String">
+        <entry name="serverName" type="String">
             <default></default>
         </entry>
         <entry name="username" type="String">

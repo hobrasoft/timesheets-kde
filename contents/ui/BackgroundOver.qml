@@ -6,12 +6,10 @@ import QtQuick 2.7
 
 Rectangle {
     anchors.fill: parent;
-    color: appStyle.backgroundColor;
+    color: "#303030"
 
-/*
-    Image {
-        source: "background.svg";
+    Background {
+        anchors.fill: parent;
         }
-*/
 }
 

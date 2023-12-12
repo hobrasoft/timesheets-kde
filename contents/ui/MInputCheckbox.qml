@@ -16,15 +16,15 @@ CheckBox {
     id: root;
     style: CheckBoxStyle {
         indicator: Rectangle {
-            implicitWidth: 30;
-            implicitHeight: 30;
+            implicitWidth: appStyle.h5Size;
+            implicitHeight: appStyle.h5Size;
             radius: height/8
             color: control.pressed ? appStyle.textColor : "transparent";
             border.color: appStyle.textColor;
             border.width: 3;
             Rectangle {
                 visible: control.checkedState == Qt.Checked;
-                color: appStyle.textColor;
+                color:  appStyle.textColor;
                 radius: height/8;
                 anchors.margins: 7;
                 anchors.fill: parent;

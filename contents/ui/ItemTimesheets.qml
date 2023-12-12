@@ -12,7 +12,6 @@ Item {
     width: parent.width;
     height: childrenRect.height;
 
-    property bool showprice: initpage.show_price;
     property var root: null;
     property real price: 0;
     property string currency: "Kč";
@@ -85,7 +84,7 @@ Item {
                     font.pixelSize: appStyle.smallSize;
                     color: appStyle.textColor;
                     text: date_from.formatYYYYMMDDHHMM();
-                    width: parent.width * (showprice ? 0.28 : 0.33);
+                    width: parent.width * (settings.show_price ? 0.28 : 0.33);
                     rightPadding: appStyle.h4Size/2;
                     }
                 Text {
@@ -94,7 +93,7 @@ Item {
                     font.pixelSize: appStyle.smallSize;
                     color: appStyle.textColor;
                     text: date_to.formatYYYYMMDDHHMM();
-                    width: parent.width * (showprice ? 0.28 : 0.33);
+                    width: parent.width * (settings.show_price ? 0.28 : 0.33);
                     rightPadding: appStyle.h4Size/2;
                     }
                 Text {
@@ -103,7 +102,7 @@ Item {
                     font.pixelSize: appStyle.smallSize;
                     color: appStyle.textColor;
                     text: date_from.secsTo(date_to).formatHHMM();
-                    width: parent.width * (showprice ? 0.22 : 0.33);
+                    width: parent.width * (settings.show_price ? 0.22 : 0.33);
                     horizontalAlignment: Text.AlignRight;
                     rightPadding: appStyle.h4Size/2;
                     }
@@ -113,15 +112,15 @@ Item {
                     font.pixelSize: appStyle.smallSize;
                     color: appStyle.textColor;
                     text: Math.round(xxxx.price * date_from.secsTo(date_to)/3600);
-                    width: parent.width * (showprice ? 0.22 : 0);
+                    width: parent.width * (settings.show_price ? 0.22 : 0);
                     horizontalAlignment: Text.AlignRight;
-                    visible: xxxx.showprice;
+                    visible: settings.show_price;
                     rightPadding: appStyle.h4Size/2;
                     }
                 MouseArea {
                     anchors.fill: parent;
                     onClicked: {
-                        timesheetsEdit.showprice = initpage.show_price;
+                        timesheetsEdit.show_price = settings.show_price;
                         timesheetsEdit.price = xxxx.price;
                         timesheetsEdit.index = index;
                         timesheetsEdit.ticket = ticket;
@@ -145,7 +144,7 @@ Item {
             font.pixelSize: appStyle.smallSize;
             color: appStyle.textColor;
             text: qsTr("Total");
-            width: parent.width * (showprice ? 0.56 : 0.66);
+            width: parent.width * (settings.show_price ? 0.56 : 0.66);
             horizontalAlignment: Text.AlignLeft;
             rightPadding: appStyle.h4Size/2;
             }
@@ -154,7 +153,7 @@ Item {
             anchors.left: ttl1.right;
             font.pixelSize: appStyle.smallSize;
             color: appStyle.textColor;
-            width: parent.width * (showprice ? 0.22 : 0.33);
+            width: parent.width * (settings.show_price ? 0.22 : 0.33);
             horizontalAlignment: Text.AlignRight;
             rightPadding: appStyle.h4Size/2;
             }
@@ -163,10 +162,10 @@ Item {
             anchors.left: ttl2.right;
             font.pixelSize: appStyle.smallSize;
             color: appStyle.textColor;
-            width: parent.width * (showprice ? 0.22 : 0.33);
+            width: parent.width * (settings.show_price ? 0.22 : 0.33);
             horizontalAlignment: Text.AlignRight;
             rightPadding: appStyle.h4Size/2;
-            visible: xxxx.showprice;
+            visible: settings.show_price;
             }
 
         }

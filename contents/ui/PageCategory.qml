@@ -13,11 +13,12 @@ Item {
     property int currentCategory: 0;
     property int parentCategory: 0;
 
+    Background {}
 
     TimesheetsHeader {
         id: header;
         saveEnabled: description.text !== ''
-        text: qsTr("New category");
+        text: qsTr("New category " + currentCategory);
         deleteVisible: true;
         deleteEnabled: currentCategory > 0;
         onSaveClicked: {
@@ -44,7 +45,6 @@ Item {
             anchors.top: parent.top;
             anchors.left: parent.left;
             anchors.right: parent.right;
-            canChangeCategory: true;
             title: qsTr("Parent category");
             root: root;
             }
@@ -99,7 +99,7 @@ Item {
                 price.text = json.price;
                 var api2 = new Api.Api();
                 api2.onFinished = function(json) {
-                    json.pop();
+                    // json.pop();
                     json.map(function(x){itemCategory.appendCategory(x)});
                     }
                 api2.categoriesToRoot(json.category);

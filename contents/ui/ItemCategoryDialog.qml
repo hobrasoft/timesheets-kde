@@ -6,12 +6,11 @@ import QtQuick 2.7
 import QtQuick.Controls 1.4
 import "api.js" as Api
 
-Rectangle {
+Item {
     id: root;
     visible: false;
     anchors.fill: parent;
-    color: "#303030"
-    // Background {}
+    BackgroundOver {}
 
     property string category: "";
     property string description: "";

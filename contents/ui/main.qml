@@ -9,7 +9,8 @@ import org.kde.plasma.core 2.0 as PlasmaCore
 
 
 Item {
-    Plasmoid.compactRepresentation: InitPage {}
-    Plasmoid.fullRepresentation: InitPage {}
+    Plasmoid.fullRepresentation: InitPage {
+        kde: true;
+        }
 }
 

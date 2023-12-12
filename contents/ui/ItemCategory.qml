@@ -11,7 +11,6 @@ Item {
     id: xxxx;
     property string category: "";
     property var root: null;
-    property bool canChangeCategory: true;
     property alias title: t1.text;
 
     width: parent.width;
@@ -29,7 +28,7 @@ Item {
         anchors.topMargin: appStyle.textSize / 5;
         text: qsTr("+");
         style: AppButtonStyle {}
-        enabled: xxxx.canChangeCategory;
+        enabled: settings.can_change_category;
         onClicked: {
             dialog.category = xxxx.category;
             dialog.visible = true;
@@ -66,7 +65,7 @@ Item {
                 id: buttondel;
                 style: AppButtonStyle {}
                 text: "×";
-                enabled: xxxx.canChangeCategory;
+                enabled: settings.can_change_category;
                 anchors.left: parent.left;
                 onClicked: {
                     catsmodel.deleteCategory(category);

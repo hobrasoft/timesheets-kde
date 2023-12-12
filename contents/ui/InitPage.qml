@@ -3,49 +3,26 @@
  * @author Petr Bravenec <petr.bravenec@hobrasoft.cz>
  */
 import QtQuick 2.7
-import org.kde.plasma.components 2.0 as PlasmaComponents
 import "api.js" as Api
 
 Item {
     id: initpage;
     anchors.fill: parent;
 
-    property string serverUrl: plasmoid.configuration.serverUrl;
-    property string apiPath:   "/api/v1/";
-    property string username:  plasmoid.configuration.username;
-    property string password:  plasmoid.configuration.password;
-
+    property bool   kde: true;
     property int    currentCategory: 0;
     property int    parentCategory: 0;
     property int    userid: -1;
-    property bool   show_price: true;
     property int    ticket: 0;
     property var    item: null;
     property var    allStatuses: [];
-
-    function all() {
-        for (var i=0; i<statuses.count; i++) {
-            // console.log("sssssssssssssssssssssssssssssss " + statuses.get(i).closed + " " + statuses.get(i).checked);
-            if (statuses.get(i).closed && statuses.get(i).checked) { 
-                return "true"; 
-                }
-            }
-        return "false";
-        }
-
-    function statusesArray() {
-        var x = new Array;
-        for (var i=0; i<statuses.count; i++) {
-            if (statuses.get(i).checked) {
-                x.push(statuses.get(i).status);
-                }
-            }
-        return x;
-        }
+    property var    settings: null;
+    property var    appStyle: null;
 
     ListModel {
         id: statuses;
-        Component.onCompleted: {
+        function load() {
+            clear();
             var api = new Api.Api();
             api.onFinished = function(json) {
                 allStatuses = [];
@@ -66,6 +43,30 @@ Item {
             }
         }
 
+    function all() {
+        for (var i=0; i<statuses.count; i++) {
+            // console.log("sssssssssssssssssssssssssssssss " + statuses.get(i).closed + " " + statuses.get(i).checked);
+            if (statuses.get(i).closed && statuses.get(i).checked) { 
+                return "true"; 
+                }
+            }
+        return "false";
+        }
+
+    function loadStatuses() {
+        statuses.load();
+        }
+
+    function statusesArray() {
+        var x = new Array;
+        for (var i=0; i<statuses.count; i++) {
+            if (statuses.get(i).checked) {
+                x.push(statuses.get(i).status);
+                }
+            }
+        return x;
+        }
+
     function loadPage(page, params) {
         if (initpage.item != null) {
             initpage.item.visible = false;
@@ -82,13 +83,29 @@ Item {
         initpage.item = instance;
         }
 
-    AppStyle { id: appStyle; }
-
     Timer {
         id: timer;
         interval: 1000;
         running: true;
         repeat: true;
+        }
+
+    Timer {
+        id: initTimer;
+        interval: 10;
+        running: false;
+        repeat: false;
+        onTriggered: {
+            var component = Qt.createComponent(initpage.kde ? "AppSettingsKde.qml" : "AppSettings.qml");
+            initpage.settings = component.createObject(initpage);
+            component = Qt.createComponent(initpage.kde ? "AppStyleKde.qml" : "AppStyle.qml");
+            initpage.appStyle = component.createObject(initpage);
+            if (!initpage.kde && initpage.settings.serverName == '') {
+                loadPage("PageSettings.qml");
+              } else {
+                loadPage("PageCategories.qml");
+                }
+            }
         }
 
     Component.onCompleted: {
@@ -98,8 +115,7 @@ Item {
             return s;
             };
 
-        Number.prototype.formatHHMM = function() {
-            if (isNaN(this)) { return ""; }
+        Number.prototype.formatHHMM = function() { if (isNaN(this)) { return ""; }
             var hh = Math.floor(this/3600);
             var mm = Math.floor((this - hh*3600)/60);
             var ss = Math.floor(this%60);
@@ -186,7 +202,8 @@ Item {
             return  (this) ? "true" : "false";
             }
 
-        loadPage("PageCategories.qml");
+        initTimer.start();
+
         }
 
 }

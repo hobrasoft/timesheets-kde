@@ -19,8 +19,6 @@ Item {
     property bool created: false;
     property int  ticket: 0;
 
-    Background{}
-
     function load() {
         if (root.ticket > 0) {
             var api = new Api.Api();
@@ -94,6 +92,8 @@ Item {
     Component.onCompleted: {
         load();
         }
+
+    Background{}
 
     TimesheetsHeader {
         id: header;
@@ -172,7 +172,6 @@ Item {
                 ItemCategory {
                     id: itemCategory;
                     anchors.top: spacer3.bottom;
-                    canChangeCategory: true;
                     root: root;
                     }
 

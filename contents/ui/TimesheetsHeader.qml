@@ -77,27 +77,9 @@ Rectangle {
             deleteClicked();
             }
         style: AppButtonStyleHeader {
-            background: Rectangle {
-                color: ((control.pressed) ? "#60ffffff" : ((control.enabled) ? "#10ffffff" : "transparent" ) )
-                border.color: (control.enabled) ? "#30ffffff" : "transparent";
-                border.width: 1;
-                radius: 0;
-                Image {
-                    id: icon;
-                    source: "trash.svg"
-                    fillMode: Image.PreserveAspectFit;
-                    anchors.fill: parent;
-                    anchors.margins: width/5;
-
-                    layer.enabled: true;
-                    layer.effect: ColorOverlay {
-                        anchors.fill: icon;
-                        color: (control.enabled) ? "tomato" : "#30ffffff";
-                        source: icon;
-                        }
-
-                    }
-                }
+            iconSource: "trash.svg";
+            iconColorDisabled: "#30ffffff";
+            iconColorEnabled: "tomato";
             }
         }
 

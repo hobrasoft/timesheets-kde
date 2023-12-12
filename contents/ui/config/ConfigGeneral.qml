@@ -9,14 +9,14 @@ import QtQuick.Dialogs 1.2
 import org.kde.plasma.core 2.0 as PlasmaCore
 
 Item {
-    property alias cfg_serverUrl: serverUrl.text;
+    property alias cfg_serverName: serverName.text;
     property alias cfg_username:  username.text;
     property alias cfg_password:  password.text;
 
     Component.onCompleted: {
         username.text = plasmoid.configuration.username;
         password.text  = plasmoid.configuration.password;
-        serverUrl.text  = plasmoid.configuration.serverUrl;
+        serverName.text  = plasmoid.configuration.serverName;
         }
 
     ColumnLayout {
@@ -25,12 +25,12 @@ Item {
         anchors.right: parent.right;
 
         Label {
-            text: qsTr("Server URL");
+            text: qsTr("Server name");
             font.bold: true;
             }
 
         TextField {
-            id: serverUrl;
+            id: serverName;
             Layout.preferredWidth: parent.width;
             }
 

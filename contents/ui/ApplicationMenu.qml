@@ -16,11 +16,8 @@ Rectangle {
     anchors.fill: parent;
     color: "#80000000";
 
-    signal statusesChanged();
-
     onVisibleChanged: {
         if (visible) { return; }
-        statusesChanged();
         }
 
     MouseArea {
@@ -44,6 +41,18 @@ Rectangle {
             spacing: 0;
 
             Button {
+                text: qsTr("Settings");
+                Layout.fillWidth: true;
+                Layout.preferredHeight: appStyle.labelSize * 2.5;
+                style: AppButtonStyleContextMenu { }
+                visible: !initpage.kde;
+                onClicked: {
+                    root.visible = false;
+                    initpage.loadPage("PageSettings.qml");
+                    }
+                }
+
+            Button {
                 text: qsTr("Create new ticket");
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
@@ -59,6 +68,7 @@ Rectangle {
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
                 style: AppButtonStyleContextMenu { }
+                enabled: settings.can_edit_categories;
                 onClicked: {
                     root.visible = false;
                     initpage.loadPage("PageCategory.qml", { parentCategory: initpage.currentCategory } );
@@ -70,6 +80,7 @@ Rectangle {
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
                 style: AppButtonStyleContextMenu { }
+                enabled: settings.can_edit_categories && Number(initpage.currentCategory) > 0;
                 onClicked: {
                     root.visible = false;
                     initpage.loadPage("PageCategory.qml", { currentCategory: initpage.currentCategory, parentCategory: initpage.parentCategory } );
@@ -99,25 +110,19 @@ Rectangle {
                     }
                 }
 
-            Repeater {
-                id: listview;
+            Button {
+                text: qsTr("About");
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
-                model: statuses;
-                clip: true;
-
-                MInputCheckboxField {
-                    label: description;
-                    width: listview.width;
-                    partiallyCheckedEnabled: false;
-                    checkedState: statuses.get(index).checked ? Qt.Checked : Qt.UnChecked;
-                    onCheckedStateChanged: {
-                        statuses.setProperty(index, "checked", checkedState == Qt.Checked);
-                        // console.log("----------------- on checked state changed: " + checkedState + " " + (checkedState == Qt.Checked) + " " + statuses.get(index).checked );
-                        }
+                style: AppButtonStyleContextMenu { }
+                onClicked: {
+                    root.visible = false;
+                    initpage.loadPage("PageAbout.qml");
                     }
                 }
+
             }
+
         }
 
 }
