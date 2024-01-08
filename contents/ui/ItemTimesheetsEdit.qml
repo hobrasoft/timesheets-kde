@@ -25,6 +25,8 @@ Rectangle {
     signal timesheetDeleted();
     signal timesheetUpdated();
 
+    BackgroundOver {}
+
     onVisibleChanged: {
         if (!visible) { return; }
         header.saveEnabled = false;
