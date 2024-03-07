@@ -59,7 +59,7 @@ Rectangle {
                     label: description;
                     width: listview.width;
                     partiallyCheckedEnabled: false;
-                    checkedState: statuses.get(index).checked ? Qt.Checked : Qt.UnChecked;
+                    checkedState: statuses.get(index).checked ? Qt.Checked : Qt.Unchecked;
                     onCheckedStateChanged: {
                         statuses.setProperty(index, "checked", checkedState == Qt.Checked);
                         statusChanged = true;
