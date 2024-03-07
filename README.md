@@ -1,4 +1,4 @@
-= Timesheet Plasmoid for KDE 5
+# Timesheet Plasmoid for KDE 5
 
 Plasmoid records the time spent on projects and tasks.
 
@@ -6,8 +6,14 @@ The plasmoid requires a timesheets server running:
 
 - https://github.com/hobrasoft/timesheets-server
 
+Timesheet plasmoid is the KDE 5 part of Hobrasoft's timesheet suite:
 
-== Installation
+- https://github.com/hobrasoft/timesheets-server
+- https://github.com/hobrasoft/timesheets-kde
+- https://github.com/hobrasoft/timesheets-android
+
+
+## Installation
 
     git clone https://github.com/hobrasoft/timesheets-kde
     kpackagetool5 -i timesheet-plasmoid.git
