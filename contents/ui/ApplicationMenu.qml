@@ -100,13 +100,24 @@ Rectangle {
                 }
 
             Button {
-                text: qsTr("Create report");
+                text: qsTr("Create new report");
                 Layout.fillWidth: true;
                 Layout.preferredHeight: appStyle.labelSize * 2.5;
                 style: AppButtonStyleContextMenu { }
                 onClicked: {
                     root.visible = false;
                     initpage.loadPage("PageReport.qml", { currentCategory: initpage.currentCategory, parentCategory: initpage.parentCategory } );
+                    }
+                }
+
+            Button {
+                text: qsTr("List of reports");
+                Layout.fillWidth: true;
+                Layout.preferredHeight: appStyle.labelSize * 2.5;
+                style: AppButtonStyleContextMenu { }
+                onClicked: {
+                    root.visible = false;
+                    initpage.loadPage("PageReportsList.qml", { currentCategory: initpage.currentCategory, parentCategory: initpage.parentCategory } );
                     }
                 }
 

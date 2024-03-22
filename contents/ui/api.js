@@ -76,9 +76,15 @@ class Api {
         this.removeCategory = function(c) { this.delete("categories/" + c); }
         this.authenticate = function(user, password) { this.get("authenticate"); }
         this.statusesAll = function () { this.get("statuses"); }
-        this.overview = function (category, statuses) { this.get("overview/" + category,  "statuses=" + statuses.join(",")); }
         this.appendStatus = function (c) { c.user = initpage.userid; c.date = new Date(); this.put("ticketstatus/", JSON.stringify(c)); }
         this.serverAbout = function () { this.get("server/about"); }
+        this.removeOverview = function(o) { this.delete("overview/" + o); }
+        this.overview = function (category, statuses) { 
+                    if (typeof category !== 'undefined') 
+                        { this.get("overview/" + category,  "statuses=" + statuses.join(",")); }
+                        else
+                        { this.get("overview"); }
+                    }
         }
 }
 

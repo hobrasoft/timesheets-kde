@@ -167,7 +167,6 @@ Item {
         }
 
     function addStatusToSelectedTickets() {
-
         var previousStatuses = [];
         for (var i=0; i< listview.model.length; i++) {
             if (!isChecked(listview.model[i])) { continue; }
