@@ -68,10 +68,13 @@ Item {
         if (typeof data.statuses === 'undefined') { return false; }
         var statuses = data.statuses; 
         if (statuses.length === 0) { return false; }
-        return statuses
+        var status = statuses
               .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
               .filter(function(x){return !x.status_ignored;})
-              .pop().status_can_be_run;
+              .pop();
+        if (typeof status === 'undefined') { return false; }
+        if (typeof status.status_can_be_run === 'undefined') { return false; }
+        return status.status_can_be_run;
         }
 
     function status(data) {
@@ -82,9 +85,10 @@ Item {
         if (statuses.length == 0) { return null; } 
         statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
         statuses = statuses.filter(function(x){return !x.status_ignored;})
-        var laststatus = statuses.pop();
-        if (typeof laststatus.status === 'undefined') { return null; }
-        return laststatus.status;
+        var status = statuses.pop();
+        if (typeof status === 'undefined') { return null; }
+        if (typeof status.status === 'undefined') { return null; }
+        return status.status;
         }
 
     function statusColor(data) {
@@ -97,6 +101,7 @@ Item {
         statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
         statuses = statuses.filter(function(x){return !x.status_ignored;})
         var status = statuses.pop();
+        if (typeof status === 'undefined') { return color; }
         if (typeof status.status_color === 'undefined') { return color; }
         return status.status_color;
         }
@@ -110,6 +115,7 @@ Item {
         statuses = statuses.sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
         statuses = statuses.filter(function(x){return !x.status_ignored;})
         var status = statuses.pop();
+        if (typeof status === 'undefined') { return ''; }
         if (typeof status.status_description === 'undefined') { return ''; }
         return status.status_description;
         }
@@ -238,8 +244,9 @@ Item {
                         if (x.statuses.length === 0) { return true; }
                         var x_status = x.statuses
                                 .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                .filter(function(s){return !s.status_ignored;}).pop().status;
-                        return stats.includes(x_status);
+                                .filter(function(s){return !s.status_ignored;}).pop();
+                        if (typeof x_status === 'undefined') { return true; }
+                        return stats.includes(x_status.status);
                         });
 
                 sumToFooter(json);
@@ -265,8 +272,9 @@ Item {
                             if (x.statuses.length === 0) { return true; }
                             var x_status = x.statuses
                                     .sort(function(a,b){return (a.date>b.date)?1:(a.date<b.date)?-1:0;})
-                                    .filter(function(s){return !s.status_ignored;}).pop().status;
-                            return stats.includes(x_status);
+                                    .filter(function(s){return !s.status_ignored;}).pop();
+                            if (typeof x_status === 'undefined') { return true; }
+                            return stats.includes(x_status.status);
                             })
                         .map(function(x) {
                             var n = x;
